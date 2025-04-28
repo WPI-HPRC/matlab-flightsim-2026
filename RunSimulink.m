@@ -25,7 +25,7 @@ MotorModel = initMotorModel();
 %% Simulator Config **FOR SIMULINK USE LATER**
 % Time Configuration
 time.dt = 0.01; % [s] Time Step
-time.t0 = 0; % [s] Initial Time
+time.t0 = -10; % [s] Initial Time
 % time.tf = 60*3; % [s] Final Time
 time.tf = 75;
 
@@ -33,13 +33,9 @@ simCfg.time = time;
 
 %% Launch Site Initialization
 % [launchLat, launchLon, launchAlt] = selectLaunchLocation();
-launchLat =  42.2738703; % [deg] Latitude
-launchLon = -71.8098593; % [deg] Longitude
-% launchLat = 42.267;
-% launchLon = -71.867833;
-launchLat =  42.274016788717546; % [deg] Latitude - Football Field
-launchLon = -71.81178692631335; % [deg] Longitude - Football Field
-launchAlt = 308; % [m] Altitude MSL
+launchLat =  42.27405; % [deg] Latitude - Football Field
+launchLon = -71.81174; % [deg] Longitude - Football Field
+launchAlt = 130; % [m] Altitude MSL - Football Field
 
 launchLLA = [launchLat, launchLon, launchAlt];
 % currLLA = launchLLA;
@@ -49,7 +45,7 @@ launch_ECEF_m = lla2ecef(launchLLA);
 % Attitude Initialization
 yaw_0 = deg2rad(0);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(85);
+pitch_0 = deg2rad(50);
  
 eul_0 = [roll_0; pitch_0; yaw_0];
 
