@@ -35,7 +35,7 @@ simCfg.time = time;
 % [launchLat, launchLon, launchAlt] = selectLaunchLocation();
 launchLat =  42.27405; % [deg] Latitude - Football Field
 launchLon = -71.81174; % [deg] Longitude - Football Field
-launchAlt = 130; % [m] Altitude MSL - Football Field
+launchAlt = 10; % [m] Altitude MSL - Football Field
 
 launchLLA = [launchLat, launchLon, launchAlt];
 % currLLA = launchLLA;
@@ -45,7 +45,7 @@ launch_ECEF_m = lla2ecef(launchLLA);
 % Attitude Initialization
 yaw_0 = deg2rad(0);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(50);
+pitch_0 = deg2rad(86);
  
 eul_0 = [roll_0; pitch_0; yaw_0];
 
