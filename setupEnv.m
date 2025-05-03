@@ -9,6 +9,7 @@ simPaths = {
     fullfile('Models', 'Motor')
     fullfile('Models', 'Controls')
     fullfile('Models', 'Gravity')
+    fullfile('Models', 'Navigatior')
     
     % Atmospheric Model
     fullfile('Models', 'Atmosphere')

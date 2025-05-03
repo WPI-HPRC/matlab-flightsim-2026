@@ -11,6 +11,8 @@ kins = HPMR_ModelRocketKinematics();
 
 % Kinematics 
 inds = getMissileInds(); % Control State Indices
+kfInds = getKfInds();
+kfConsts = getKfConsts();
 
 % Aerodynamics Model
 % AeroModel = initMissileAeroModel();
