@@ -7,7 +7,10 @@ function kfParams = initNavParams()
 
     % Initialize struct fields
     kfParams.x        = zeros(N, 1);
-    kfParams.x_pred   = zeros(N, 1);
+
+    kfParams.x(kfInds.quat) = [1; 0; 0; 0];
+    
+    kfParams.x_pred   = kfParams.x;
     kfParams.Q_k      = initializeProcessNoise(kfInds, kfConsts);     % [N x N]
     kfParams.P        = initializeErrorCovariance(kfInds, kfConsts);  % [N x N]
     kfParams.P_min    = kfParams.P;
