@@ -7,7 +7,8 @@ clear variables; close all; clc;
 %% Configure constants and model data
 const = setupConstants();
 % kins = HPMR_MissileKinematics();
-kins = HPMR_ModelRocketKinematics();
+% kins = HPMR_ModelRocketKinematics();
+kins = HPRC_RocketKinematics();
 
 % Kinematics 
 inds = getMissileInds(); % Control State Indices
@@ -16,7 +17,8 @@ kfConsts = getKfConsts();
 
 % Aerodynamics Model
 % AeroModel = initMissileAeroModel();
-AeroModel = initRocketAeroModel();
+% AeroModel = initRocketAeroModel();
+AeroModel = init_IREC2025_CFDModel();
 
 % IMU Model
 ImuModel = getASM330Params();
@@ -35,9 +37,13 @@ simCfg.time = time;
 
 %% Launch Site Initialization
 % [launchLat, launchLon, launchAlt] = selectLaunchLocation();
-launchLat =  42.27405; % [deg] Latitude - Football Field
-launchLon = -71.81174; % [deg] Longitude - Football Field
-launchAlt = 10; % [m] Altitude MSL - Football Field
+% launchLat =  42.27405; % [deg] Latitude - Football Field
+% launchLon = -71.81174; % [deg] Longitude - Football Field
+% launchAlt = 10; % [m] Altitude MSL - Football Field
+
+launchLat =  31.942558857776472; % [deg] Latitude - TX
+launchLon = -102.20475753497975; % [deg] Longitude - TX
+launchAlt = 875; % [m] Altitude MSL - TX
 
 launchLLA = [launchLat, launchLon, launchAlt];
 % currLLA = launchLLA;
@@ -88,13 +94,43 @@ x_0 = [
     m_0;
 ];
 
+%% Initialize Navigator
+kfParams = initNavParams();
+assignin('base', 'kfParams', kfParams);
+
+N = length(kfParams.x);
+
+elems(1) = Simulink.BusElement;
+elems(1).Name = 'x';
+elems(1).Dimensions = [N 1];
+
+elems(2) = Simulink.BusElement;
+elems(2).Name = 'x_pred';
+elems(2).Dimensions = [N 1];
+
+elems(3) = Simulink.BusElement;
+elems(3).Name = 'Q_k';
+elems(3).Dimensions = [N N];
+
+elems(4) = Simulink.BusElement;
+elems(4).Name = 'P';
+elems(4).Dimensions = [N N];
+
+elems(5) = Simulink.BusElement;
+elems(5).Name = 'P_min';
+elems(5).Dimensions = [N N];
+
+kfParamsBus = Simulink.Bus;
+kfParamsBus.Elements = elems;
+
+assignin('base', 'kfParamsBus', kfParamsBus);
+
 %% Load Simulink Model
 modelName = 'FlightSimulation';
 saveRate = 10; % [Hz]
 saveDir = fullfile(pwd, 'SIM_OUT');
 
 % Open Simulation
-
 open_system(modelName);
 
 % Start Timer

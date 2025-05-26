@@ -3,6 +3,7 @@ function P = initializeErrorCovariance(kfInds, kfConsts)
     % State Intial Variance
     quatVar = (kfConsts.asm330.quatStdDev)^2;
     gyroBiasVar = (kfConsts.asm330.gyroBiasStdDev)^2;
+    accelBiasVar = (kfConsts.asm330.accelBiasStdDev)^2;
 
     allInds = struct2cell(kfInds);
     flatInds = cellfun(@(x) x(:), allInds, 'UniformOutput', false);
@@ -12,5 +13,6 @@ function P = initializeErrorCovariance(kfInds, kfConsts)
 
     P(sub2ind(size(P), kfInds.quat, kfInds.quat))         = quatVar;
     P(sub2ind(size(P), kfInds.gyroBias, kfInds.gyroBias)) = gyroBiasVar;
+    P(sub2ind(size(P), kfInds.accelBias, kfInds.accelBias)) = accelBiasVar;
 
 end

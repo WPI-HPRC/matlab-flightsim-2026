@@ -20,7 +20,7 @@ function ModelData = initMissileAeroModel()
 
     % Create Scattered Interpolant
     CD_lookup = scatteredInterpolant(MachNumbers, AoA, Cd_table, 'linear', 'none');
-    CL_lookup = scatteredInterpolant(MachNumbers, AoA, Cd_table, 'linear', 'none');
+    CL_lookup = scatteredInterpolant(MachNumbers, AoA, Cl_table, 'linear', 'none');
 
     ModelData.CdLookup = @(inputMach, inputAoA) CD_lookup(inputMach, inputAoA);
     ModelData.ClLookup = @(inputMach, inputAoA) CL_lookup(inputMach, inputAoA);

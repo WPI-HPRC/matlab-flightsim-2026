@@ -31,9 +31,14 @@ function inds = getKfInds()
     inds.gbz = 7;
     inds.gyroBias = [inds.gbx; inds.gby; inds.gbz];
 
-    % % Accel Bias
-    % inds.abx = 17;
-    % inds.aby = 18;
-    % inds.abz = 19;
-    % inds.accelBias = [inds.abx; inds.aby; inds.abz];
+    % Accel Bias
+    inds.abx = 8;
+    inds.aby = 9;
+    inds.abz = 10;
+    inds.accelBias = [inds.abx; inds.aby; inds.abz];
+
+    % Compute max scalar index
+    scalarFields = structfun(@(x) isscalar(x), inds);
+    scalarValues = struct2cell(inds);
+    inds.maxStateIndex = max(cell2mat(scalarValues(scalarFields)));
 end
