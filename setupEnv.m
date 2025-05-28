@@ -28,6 +28,9 @@ simPaths = {
 
     %% Utilities
     fullfile('Utils');
+
+    %% Plotting
+    fullfile('Plotting');
     
 };
 

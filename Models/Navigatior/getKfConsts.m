@@ -11,5 +11,20 @@ function consts = getKfConsts()
 
     consts.navPropDt = 0.01; % [s] Nav Prop Rate
 
+    icm20948.accelXY_var = 0.0383; % [g]
+    icm20948.accelZ_var  = 0.0626; % [g]
+    icm20948.accelXY_VRW = 0.0052; % [g/sqrt(hz)]
+    icm20948.accelZ_VRW  = 0.0099; % [g/sqrt(hz)]
+    icm20948.gyroXYZ_var = 0.0051; % [deg/s]
+    icm20948.gyro_VRW    = 8.33e-4; % [deg/s/sqrt(Hz)]
+    icm20948.magXYZ_var  = 0.7263;  % [uT]
+
+    consts.R_grav = [
+        icm20948.accelXY_var^2 0 0;
+        0 icm20948.accelXY_var^2 0;
+        0 0 icm20948.accelZ_var^2;
+    ];
+
+    consts.icm20948 = icm20948;
 
 end
