@@ -1,21 +1,23 @@
 function eul = hpmr_quat2eul(q)
     % Ensure q is a 4xN matrix
     if size(q,1) ~= 4
-        error('Input quaternion buffer must be a 4xN matrix.');
+        error('Input quaternion must be 4xN: [w; x; y; z].');
     end
 
-    % Number of quaternions
     N = size(q,2);
+    eul = zeros(3, N);  % [roll; pitch; yaw]
 
-    % Preallocate output
-    eul = zeros(3, N);
-
-    % Compute Euler angles for each quaternion in the buffer
     for i = 1:N
-        eul(:, i) = [
-            atan2(2*(q(1,i)*q(2,i) + q(3,i)*q(4,i)), 1 - 2*(q(2,i)^2 + q(3,i)^2));
-            (-pi/2) + 2*atan2(sqrt(1 + 2*(q(1,i)*q(3,i) - q(2,i)*q(4,i))), sqrt(1 - 2*(q(1,i)*q(3,i) - q(2,i)*q(4,i))));
-            atan2(2*(q(1,i)*q(4,i) + q(2,i)*q(3,i)), 1 - 2*(q(3,i)^2 + q(4,i)^2))
-        ];
+        qw = q(1,i);
+        qx = q(2,i);
+        qy = q(3,i);
+        qz = q(4,i);
+
+        % XYZ (roll-pitch-yaw)
+        roll  = atan2(2*(qw*qx - qy*qz), 1 - 2*(qx^2 + qy^2));
+        pitch = asin( 2*(qw*qy + qx*qz) );
+        yaw   = atan2(2*(qw*qz - qx*qy), 1 - 2*(qy^2 + qz^2));
+
+        eul(:, i) = [roll; pitch; yaw];
     end
 end

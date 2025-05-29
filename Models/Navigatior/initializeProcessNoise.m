@@ -5,9 +5,15 @@ function Q_k = initializeProcessNoise(kfInds, kfConsts)
 
     Q_k = zeros(n,n);
 
-    Q_k(sub2ind(size(Q_k), kfInds.quat, kfInds.quat)) = 1e-8;
+    Q_k(sub2ind(size(Q_k), kfInds.quat, kfInds.quat)) = 1e-4;
 
-    Q_k(sub2ind(size(Q_k), kfInds.gyroBias, kfInds.gyroBias)) = 0.001;
-    Q_k(sub2ind(size(Q_k), kfInds.accelBias, kfInds.accelBias)) = 0.001;
+    % Gyro bias process noise (very slow drift)
+    Q_k(sub2ind(size(Q_k), kfInds.gyroBias, kfInds.gyroBias)) = (1e-5)^2;
+    
+    % Accelerometer bias process noise (slightly faster)
+    Q_k(sub2ind(size(Q_k), kfInds.accelBias, kfInds.accelBias)) = (1e-2)^2;
+
+    % Q_k(sub2ind(size(Q_k), kfInds.gyroBias, kfInds.gyroBias)) = 0.001;
+    % Q_k(sub2ind(size(Q_k), kfInds.accelBias, kfInds.accelBias)) = 0.001;
 
 end

@@ -9,14 +9,12 @@ function f = predictionFunction(x, u, kfInds)
     qy = x(kfInds.qy);
     qz = x(kfInds.qz);
 
-    quatMat = [
+    f_q = 0.5 * [
         -qx -qy -qz;
          qw -qz  qy;
          qz  qw -qx;
         -qy  qx  qw;
-    ];
-
-    f_q = quatMat * [p; q; r] * 0.5;
+    ] * [p; q; r];
 
     f = [
         f_q; 0; 0; 0; 0; 0; 0;

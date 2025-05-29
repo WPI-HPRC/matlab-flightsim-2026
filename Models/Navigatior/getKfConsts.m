@@ -19,11 +19,12 @@ function consts = getKfConsts()
     icm20948.gyro_VRW    = 8.33e-4; % [deg/s/sqrt(Hz)]
     icm20948.magXYZ_var  = 0.7263;  % [uT]
 
-    consts.R_grav = [
-        icm20948.accelXY_var^2 0 0;
-        0 icm20948.accelXY_var^2 0;
-        0 0 icm20948.accelZ_var^2;
-    ];
+    % consts.R_grav = [
+    %     icm20948.accelXY_var^2 0 0;
+    %     0 icm20948.accelXY_var^2 0;
+    %     0 0 icm20948.accelZ_var^2;
+    % ];
+    consts.R_grav = 1e-5 * eye(3);
 
     consts.icm20948 = icm20948;
 

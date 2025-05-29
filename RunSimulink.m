@@ -28,10 +28,11 @@ MotorModel = initMotorModel();
 
 %% Simulator Config **FOR SIMULINK USE LATER**
 % Time Configuration
-time.dt = 0.01; % [s] Time Step
-time.t0 = -30; % [s] Initial Time
+time.dt = 0.001; % [s] Time Step
+time.navDt = 0.001;
+time.t0 = -10; % [s] Initial Time
 % time.tf = 60*3; % [s] Final Time
-time.tf = 75;
+time.tf = 100;
 
 simCfg.time = time;
 
@@ -57,12 +58,12 @@ pitch_0 = deg2rad(86);
  
 eul_0 = [roll_0; pitch_0; yaw_0];
 
-q_0 = hpmr_eul2quat(yaw_0, pitch_0, roll_0);
+q_0 = hpmr_eul2quat(roll_0, pitch_0, yaw_0);
 
 % Angular Rate Initialization
-w_ib_x = 1e-5; % [rad/s]
-w_ib_y = 1e-5; % [rad/s]
-w_ib_z = 1e-5; % [rad/s]
+w_ib_x = 1e-10; % [rad/s]
+w_ib_y = 1e-10; % [rad/s]
+w_ib_z = 1e-10; % [rad/s]
 
 % Velocity Initialization
 R_ET = [
@@ -71,10 +72,10 @@ R_ET = [
      cosd(launchLat),            0,         -sind(launchLat)
 ];
 
-R_TB = quat2rotm(q_0');
+R_TB = hpmr_quat2rotm(q_0);
 R_EB = R_ET * R_TB;
 
-V_0_B = [1; 1e-5; 1e-5];
+V_0_B = [1e-5; 1e-5; 1e-5];
 
 V_0_E = R_EB * V_0_B;
 
@@ -127,7 +128,7 @@ assignin('base', 'kfParamsBus', kfParamsBus);
 
 %% Load Simulink Model
 modelName = 'FlightSimulation';
-saveRate = 10; % [Hz]
+saveRate = 100; % [Hz]
 saveDir = fullfile(pwd, 'SIM_OUT');
 
 % Open Simulation
