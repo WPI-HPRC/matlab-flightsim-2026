@@ -38,13 +38,13 @@ simCfg.time = time;
 
 %% Launch Site Initialization
 % [launchLat, launchLon, launchAlt] = selectLaunchLocation();
-% launchLat =  42.27405; % [deg] Latitude - Football Field
-% launchLon = -71.81174; % [deg] Longitude - Football Field
-% launchAlt = 10; % [m] Altitude MSL - Football Field
+launchLat =  42.27405; % [deg] Latitude - Football Field
+launchLon = -71.81174; % [deg] Longitude - Football Field
+launchAlt = 10; % [m] Altitude MSL - Football Field
 
-launchLat =  31.942558857776472; % [deg] Latitude - TX
-launchLon = -102.20475753497975; % [deg] Longitude - TX
-launchAlt = 875; % [m] Altitude MSL - TX
+% launchLat =  31.942558857776472; % [deg] Latitude - TX
+% launchLon = -102.20475753497975; % [deg] Longitude - TX
+% launchAlt = 875; % [m] Altitude MSL - TX
 
 launchLLA = [launchLat, launchLon, launchAlt];
 % currLLA = launchLLA;
@@ -128,7 +128,7 @@ assignin('base', 'kfParamsBus', kfParamsBus);
 
 %% Load Simulink Model
 modelName = 'FlightSimulation';
-saveRate = 100; % [Hz]
+saveRate = 1000; % [Hz]
 saveDir = fullfile(pwd, 'SIM_OUT');
 
 % Open Simulation
