@@ -29,7 +29,7 @@ MotorModel = initMotorModel();
 %% Simulator Config **FOR SIMULINK USE LATER**
 % Time Configuration
 time.dt = 0.001; % [s] Time Step
-time.navDt = 0.001;
+time.navDt = 0.025;
 time.t0 = -10; % [s] Initial Time
 % time.tf = 60*3; % [s] Final Time
 time.tf = 100;
@@ -96,7 +96,7 @@ x_0 = [
 ];
 
 %% Initialize Navigator
-kfParams = initNavParams();
+kfParams = initNavParams(kins);
 assignin('base', 'kfParams', kfParams);
 
 N = length(kfParams.x);
@@ -120,6 +120,10 @@ elems(4).Dimensions = [N N];
 elems(5) = Simulink.BusElement;
 elems(5).Name = 'P_min';
 elems(5).Dimensions = [N N];
+
+elems(6) = Simulink.BusElement;
+elems(6).Name = 'f_pred';
+elems(6).Dimensions = [N 1];
 
 kfParamsBus = Simulink.Bus;
 kfParamsBus.Elements = elems;

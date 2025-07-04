@@ -20,7 +20,7 @@ function consts = getKfConsts()
 
     mmc5983.magXYZ_var = 0.4; % [uT]
 
-    consts.R_grav = 1e-5 * eye(3);
+    consts.R_grav = 1e-3 * eye(3);
 
     consts.icm20948 = icm20948;
 

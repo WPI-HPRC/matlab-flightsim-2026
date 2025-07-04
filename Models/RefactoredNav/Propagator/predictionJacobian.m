@@ -8,12 +8,11 @@ function phi = predictionJacobian(x, u, kfInds, kfConsts, time)
     bg = x(kfInds.gyroBias);
     ba = x(kfInds.accelBias);
     bm = x(kfInds.magBias);
-    I  = x(inds.inertia);
+    I  = x(kfInds.inertia);
 
     %% Inputs
     u_gyro  = u(1:3);
     u_accel = u(4:6);
-    u_mag   = u(7:9);
 
     %% Precompute
     w_ib_b = u_gyro - bg;
@@ -35,12 +34,13 @@ function phi = predictionJacobian(x, u, kfInds, kfConsts, time)
     for i = 1:3
         dOmega_i = zeros(4);
         dOmega_i(2:4,1) = -dOmega_dbq(i,:)';
-        dOmega_i(2:4,2:4) = -skew(eye(3)(:,i));
+        ei = eye(3);
+        dOmega_i(2:4,2:4) = -skew(ei(:,i));
         F(kfInds.quat, kfInds.gyroBias(i)) = 0.5 * dOmega_i * q;
     end
 
     %% === POSITION DYNAMICS ===
-    F(kfinds.pos, kfInds.vel) = eye(3);
+    F(kfInds.pos, kfInds.vel) = eye(3);
 
     %% === VELOCITY DYNAMICS ===
 

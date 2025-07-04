@@ -1,5 +1,9 @@
 function f = predictionFunction(x, u, kfInds)
 
+    %% Force Column Vectors
+    x = x(:);
+    u = u(:);
+
     %% State Unpacking
     q = x(kfInds.quat);
     p = x(kfInds.pos);
@@ -8,18 +12,17 @@ function f = predictionFunction(x, u, kfInds)
     bg = x(kfInds.gyroBias);
     ba = x(kfInds.accelBias);
     bm = x(kfInds.magBias);
-    I  = x(inds.inertia);
+    I  = x(kfInds.inertia);
 
     %% Inputs
     u_gyro  = u(1:3);
     u_accel = u(4:6);
-    u_mag   = u(7:9);
 
     % Correct Angular Velocity
-    w_ib_b = u_gyro - bg;
+    w_ib_b = u_gyro(:) - bg(:);
 
     %% Quaternion Derivative
-    Omega = [0 -w_ib_b'; w_ib_b -skew(w_ib-b)];
+    Omega = [0 -w_ib_b'; w_ib_b -skew(w_ib_b)];
 
     dq = 0.5 * Omega * q;
 

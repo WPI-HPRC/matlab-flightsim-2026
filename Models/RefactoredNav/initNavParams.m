@@ -1,4 +1,4 @@
-function kfParams = initNavParams()
+function kfParams = initNavParams(kins)
     kfInds   = getKfInds();
     kfConsts = getKfConsts();
 
@@ -9,9 +9,14 @@ function kfParams = initNavParams()
     kfParams.x        = zeros(N, 1);
 
     kfParams.x(kfInds.quat) = [1; 0; 0; 0];
+
+    % Initial Guess at Inertia
+    kfParams.x(kfInds.inertia) = [kins.I_x_empty; kins.I_y_empty; kins.I_z_empty];
     
     kfParams.x_pred   = kfParams.x;
     kfParams.Q_k      = initProcessNoise(kfInds, kfConsts);     % [N x N]
     kfParams.P        = initErrorCovariance(kfInds, kfConsts);  % [N x N]
     kfParams.P_min    = kfParams.P;
+
+    kfParams.f_pred   = zeros(N,1);
 end
