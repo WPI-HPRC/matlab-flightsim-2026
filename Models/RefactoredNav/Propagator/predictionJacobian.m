@@ -78,5 +78,6 @@ function phi = predictionJacobian(x, u, kfInds, kfConsts, time)
     end
 
     %% Discretize
-    phi = eye(N) + F * time.navDt;
+    % phi = eye(N) + F * time.navDt;
+    phi = expm(F*time.navDt);
 end
