@@ -1,150 +1,128 @@
 function plotNav(out, kfInds)
+    close all; clc;
+    
+    ICM20948_PARAMS = getICM20948Params();
+    MMC5983_PARAMS  = getMMC5983Params();
+    
+    % === Extract Data ===
+    truthTime = out.tout;
+    pos_T_true = out.P_T.Data;
+    RPY = rad2deg(out.RPY.Data);
 
-close all; clc;
+    N = size(out.R_BT.Data, 3);
+    q_true = zeros(4, N);  % [4 x N]
+    vel_T_true = zeros(3,N);
+    for i = 1:N
+        R = out.R_BT.Data(:,:,i);  % [3x3]
+        q_true(:,i) = rotm2quat(R');  % Transpose from R_BT to R_TB
+        
+        vel_T_true(:, i) = R' * out.V_B.Data(i, :)';  % Transform velocity to the true frame
 
-% Extract Truth States
-truthTime = out.tout;
-LLA = out.LLA.Data;
-RPY = rad2deg(out.RPY.Data);              % [N x 3]
-q_true = eul2quat(deg2rad(RPY), 'XYZ')';  % [4 x N], body-to-NED
-
-% Nav States
-navTime = out.NavBus.x.Time;              % [1 x N]
-q_pred  = out.NavBus.x.Data(1:4, :);      % [4 x N]
-gb_pred = out.NavBus.x.Data(kfInds.gyroBias, :);
-ab_pred = out.NavBus.x.Data(kfInds.accelBias, :);
-P       = out.NavBus.P.Data;              % [13 x 13 x N]
-
-% Downsample truth quaternion to nav time
-q_true_resampled = zeros(4, length(navTime));
-for i = 1:length(navTime)
-    [~, idx] = min(abs(truthTime - navTime(i)));
-    q_true_resampled(:, i) = q_true(:, idx);
-end
-
-% === Quaternion Error (True - Pred) using q_err = q_true * inv(q_pred)
-quatErrQuat = zeros(length(navTime), 4);
-for i = 1:length(navTime)
-    qT = q_true_resampled(:, i)';
-    qP = q_pred(:, i)';
-    quatErrQuat(i, :) = quatmultiply(qT, quatinv(qP)); % row vector
-end
-
-% Euler Angle Error from Quaternion Error
-eulErrQuat = rad2deg(quat2eul(quatErrQuat, 'ZYX'));  % [N x 3]
-
-% Wrap angles to [-180, 180]
-eulErrQuat = mod(eulErrQuat + 180, 360) - 180;
-
-%% Plot Euler Error from Quaternion Residual
-angleLabels = {'Yaw (Z)', 'Pitch (Y)', 'Roll (X)'};
-figure('Name', 'Euler Error (Quaternion Residual)');
-for i = 1:3
-    subplot(3,1,i);
-    plot(navTime, eulErrQuat(:,i));
-    ylabel([angleLabels{i}, ' Error (deg)']);
-    grid on;
-end
-xlabel('Time (s)');
-sgtitle('Euler Angle Error from Quaternion Residual');
-
-%% Convert predicted quaternions to Euler
-eulPred = rad2deg(quat2eul(q_pred', 'ZYX'));  % [N x 3]
-
-% Downsample true Euler
-eulTrue = zeros(length(navTime), 3);
-for i = 1:length(navTime)
-    [~, idx] = min(abs(truthTime - navTime(i)));
-    eulTrue(i, :) = rad2deg(quat2eul(q_true(:, idx)', 'ZYX'));
-end
-
-% Euler error directly
-eulErr = eulTrue - eulPred;
-eulErr = mod(eulErr + 180, 360) - 180;  % wrap
-
-%% Plot Euler Comparison
-figure('Name', 'Euler Angles Comparison');
-for i = 1:3
-    subplot(3,1,i);
-    plot(navTime, eulTrue(:,i), 'DisplayName', 'Truth'); hold on;
-    plot(navTime, eulPred(:,i), 'r--', 'DisplayName', 'Estimated');
-    ylabel(angleLabels{i});
-    grid on;
-    legend();
-end
-xlabel('Time (s)');
-sgtitle('Euler Angles: Truth vs Estimated');
-
-%% Plot Euler Error (Direct)
-figure('Name', 'Euler Angle Estimation Error (Direct)');
-for i = 1:3
-    subplot(3,1,i);
-    plot(navTime, eulErr(:,i));
-    ylabel([angleLabels{i}, ' Error (deg)']);
-    grid on;
-end
-xlabel('Time (s)');
-sgtitle('Euler Angle Estimation Error (Direct)');
-
-%% Quaternion State 1-Sigma Bounds
-quatInds = 1:4;
-sigma_q = zeros(4, length(navTime));
-for i = 1:length(navTime)
-    for j = 1:4
-        sigma_q(j, i) = sqrt(P(quatInds(j), quatInds(j), i));
     end
-end
 
-labels = {'q_w', 'q_x', 'q_y', 'q_z'};
-figure('Name', 'Quaternion State 1-Sigma Standard Deviations');
-for i = 1:4
-    subplot(4,1,i);
-    plot(navTime, sigma_q(i,:), 'b'); hold on;
-    plot(navTime, -sigma_q(i,:), 'b');
-    ylabel([labels{i}, ' \sigma']);
-    grid on;
-end
-xlabel('Time (s)');
-sgtitle('Quaternion State 1-\sigma Standard Deviations');
+    % Navigation state estimates
+    navTime = out.NavBus.x.Time;
+    x_est = out.NavBus.x.Data;
+    P     = out.NavBus.P.Data;
+    
+    q_est  = x_est(1:4, :);
+    gb_est = x_est(kfInds.gyroBias, :);
+    ab_est = x_est(kfInds.accelBias, :);
+    mb_est = x_est(kfInds.magBias, :);
+    pos_est = x_est(kfInds.pos, :);
+    vel_est = x_est(kfInds.vel, :);
+    
+    % === Resample Ground Truth ===
 
-%% Gyro Bias Covariance
-gbInds = kfInds.gyroBias;
-sigma_gb = zeros(3, length(navTime));
-for i = 1:length(navTime)
-    for j = 1:3
-        sigma_gb(j, i) = sqrt(P(gbInds(j), gbInds(j), i));
+    pos_true_resampled = resampleTimeSeries(pos_T_true, truthTime, navTime);
+    vel_true_resampled = resampleTimeSeries(vel_T_true, truthTime, navTime);
+    q_true_resampled   = resampleTimeSeries(q_true, truthTime, navTime);
+    
+    % === Helper: Quaternion to Euler ===
+    quatToEulerZYX = @(q) rad2deg(quat2eul(q', 'ZYX'));  % N x 3
+    eul_true = quatToEulerZYX(q_true_resampled);
+    eul_est  = quatToEulerZYX(q_est);
+    
+    eul_error = wrapTo180(eul_true - eul_est);  % Error in degrees
+    
+    % === Position Error ===
+    pos_error = pos_true_resampled - pos_est;
+
+    % === Velocity Error
+    vel_err = vel_true_resampled - vel_est;
+
+    % === Quaternion Error ===
+    q_err = zeros(length(navTime), 4);  % [N x 4]
+    for i = 1:length(navTime)
+        qT = q_true_resampled(:, i)';
+        qE = q_est(:, i)';
+        q_err(i, :) = quatmultiply(qT, quatinv(qE));  % [1 x 4]
     end
+
+    % === Bias Error
+    ab_err = ab_est - ICM20948_PARAMS.accel.bias;
+    gb_err = gb_est - ICM20948_PARAMS.gyro.bias;
+    mb_err = mb_est - MMC5983_PARAMS.bias;
+    
+    % === Plotting ===
+    % plotWithCovariance(navTime, eul_error, P, [1 2 3], 'Euler Angle Error (deg)', {'Yaw', 'Pitch', 'Roll'});
+    plotWithCovariance(navTime, q_err, P, kfInds.quat, 'Quaternion Error', {'q_w', 'q_x', 'q_y', 'q_z'});
+    plotWithCovariance(navTime, pos_error, P, kfInds.pos, 'Position Error (m)', {'X', 'Y', 'Z'});
+    plotWithCovariance(navTime, vel_err, P, kfInds.vel, 'Velocity State Covariance (m/s)', {'Vx', 'Vy', 'Vz'});  % No truth
+    plotWithCovariance(navTime, gb_err, P, kfInds.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'});
+    plotWithCovariance(navTime, ab_err, P, kfInds.accelBias, 'Accel Bias Estimation (m/s^2)', {'X', 'Y', 'Z'});
+    plotWithCovariance(navTime, mb_err, P, kfInds.magBias, 'Mag Bias Estimation (uT)', {'X', 'Y', 'Z'});
+
 end
 
-figure('Name', 'Gyro Bias Estimation & Covariance');
-for i = 1:3
-    subplot(3,1,i);
-    plot(navTime, sigma_gb(i,:), 'b'); hold on;
-    plot(navTime, -sigma_gb(i,:), 'b');
-    plot(navTime, gb_pred(i,:), 'r');
-    ylabel(['Gyro Bias ', 'xyz', ' (rad/s)']);
-    grid on;
-end
-xlabel('Time (s)');
-
-%% Accel Bias Covariance
-abInds = kfInds.accelBias;
-sigma_ab = zeros(3, length(navTime));
-for i = 1:length(navTime)
-    for j = 1:3
-        sigma_ab(j, i) = sqrt(P(abInds(j), abInds(j), i));
+function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
+    % Ensure errorVec is [N x dim]
+    if size(errorVec, 2) == length(inds)
+        err = errorVec;  % already [N x dim]
+    elseif size(errorVec, 1) == length(inds)
+        err = errorVec';  % transpose to [N x dim]
+    else
+        [s1, s2] = size(errorVec); 
+        error('Error vector has wrong shape. Expected [dim x N] or [N x dim], got [%d x %d]', s1, s2);
     end
+
+    N = length(timeVec);
+    dim = length(inds);
+    sigma = zeros(N, dim);
+    for i = 1:N
+        for j = 1:dim
+            sigma(i,j) = sqrt(P(inds(j), inds(j), i));
+        end
+    end
+
+    figure('Name', yLabelStr);
+    for j = 1:dim
+        subplot(dim,1,j);
+        plot(timeVec, err(:,j), 'r', 'DisplayName', 'Error'); hold on;
+        plot(timeVec, sigma(:,j), 'b--', 'DisplayName', '+1\sigma');
+        plot(timeVec, -sigma(:,j), 'b--', 'DisplayName', '-1\sigma');
+        ylabel([labels{j}, ' ', yLabelStr]);
+        grid on;
+        legend();
+    end
+    xlabel('Time (s)');
+    sgtitle([yLabelStr, ' with ±1\sigma Covariance Bounds']);
+
+    linkaxes(findall(gcf, 'Type', 'axes'), 'x');
 end
 
-figure('Name', 'Accel Bias Estimation & Covariance');
-for i = 1:3
-    subplot(3,1,i);
-    plot(navTime, sigma_ab(i,:), 'b'); hold on;
-    plot(navTime, -sigma_ab(i,:), 'b');
-    plot(navTime, ab_pred(i,:), 'r');
-    ylabel(['Accel Bias ', 'xyz', ' (m/s^2)']);
-    grid on;
-end
-xlabel('Time (s)');
+function data_resamp = resampleTimeSeries(truthData, truthTime, navTime)
+    % Convert [M x 1 x N] to [M x N]
+    if ndims(truthData) == 3
+        data = squeeze(truthData);  % [M x N]
+    else
+        data = truthData;  % already [M x N]
+    end
 
+    % Resample each row independently
+    M = size(data, 1);
+    data_resamp = zeros(M, length(navTime));
+    for i = 1:M
+        data_resamp(i, :) = interp1(truthTime, data(i, :), navTime, 'linear', 'extrap');
+    end
 end

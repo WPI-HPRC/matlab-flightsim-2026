@@ -27,6 +27,7 @@ ref_ecef = [(N + h_ref) * cos(phi) * cos(lambda);
 % Delta ECEF
 delta_ECEF = P_E - ref_ecef;
 
+% ECEF to NED
 R_TE = [
     -sin(phi)*cos(lambda), -sin(phi)*sin(lambda), cos(phi);
     -sin(lambda), cos(lambda), 0;

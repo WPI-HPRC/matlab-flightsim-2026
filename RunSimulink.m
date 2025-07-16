@@ -29,7 +29,7 @@ MotorModel = initMotorModel();
 %% Simulator Config **FOR SIMULINK USE LATER**
 % Time Configuration
 time.dt = 0.001; % [s] Time Step
-time.navDt = 0.001;
+time.navDt = 0.01;
 time.t0 = -10; % [s] Initial Time
 % time.tf = 60*3; % [s] Final Time
 time.tf = 100;
@@ -38,13 +38,13 @@ simCfg.time = time;
 
 %% Launch Site Initialization
 % [launchLat, launchLon, launchAlt] = selectLaunchLocation();
-% launchLat =  42.27405; % [deg] Latitude - Football Field
-% launchLon = -71.81174; % [deg] Longitude - Football Field
-% launchAlt = 10; % [m] Altitude MSL - Football Field
+launchLat =  42.27405; % [deg] Latitude - Football Field
+launchLon = -71.81174; % [deg] Longitude - Football Field
+launchAlt = 10; % [m] Altitude MSL - Football Field
 
-launchLat =  31.942558857776472; % [deg] Latitude - TX
-launchLon = -102.20475753497975; % [deg] Longitude - TX
-launchAlt = 875; % [m] Altitude MSL - TX
+% launchLat =  31.942558857776472; % [deg] Latitude - TX
+% launchLon = -102.20475753497975; % [deg] Longitude - TX
+% launchAlt = 875; % [m] Altitude MSL - TX
 
 launchLLA = [launchLat, launchLon, launchAlt];
 % currLLA = launchLLA;
@@ -96,7 +96,7 @@ x_0 = [
 ];
 
 %% Initialize Navigator
-kfParams = initNavParams();
+kfParams = initNavParams(kins);
 assignin('base', 'kfParams', kfParams);
 
 N = length(kfParams.x);
@@ -121,6 +121,10 @@ elems(5) = Simulink.BusElement;
 elems(5).Name = 'P_min';
 elems(5).Dimensions = [N N];
 
+elems(6) = Simulink.BusElement;
+elems(6).Name = 'f_pred';
+elems(6).Dimensions = [N 1];
+
 kfParamsBus = Simulink.Bus;
 kfParamsBus.Elements = elems;
 
@@ -128,7 +132,7 @@ assignin('base', 'kfParamsBus', kfParamsBus);
 
 %% Load Simulink Model
 modelName = 'FlightSimulation';
-saveRate = 100; % [Hz]
+saveRate = 1000; % [Hz]
 saveDir = fullfile(pwd, 'SIM_OUT');
 
 % Open Simulation

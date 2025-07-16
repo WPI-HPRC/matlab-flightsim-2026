@@ -16,8 +16,4 @@ function consts = getASM330Params()
     %% Accelerometer Parameters
 
     consts.accel.noise = 60e-6; % [g/sqrt(hz)] 
-
-
-
-
 end
