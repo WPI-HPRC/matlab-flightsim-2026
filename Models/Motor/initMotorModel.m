@@ -54,7 +54,7 @@ ModelData.Isp      = str2double(engConstsNode.getAttribute('Isp'));
 ModelData.t_b      = str2double(engConstsNode.getAttribute('burn-time'));
 ModelData.launchWt = str2double(engConstsNode.getAttribute('initWt')) / 1000;
 ModelData.propWt   = str2double(engConstsNode.getAttribute('propWt')) / 1000;
-ModelData.emptyWt  = ModelData.launchWt - ModelData.propWt / 1000;
+ModelData.emptyWt  = ModelData.launchWt - ModelData.propWt;
 
 % Loop through each <eng-data> element and extract attributes
 for i = 0:engDataNodes.getLength-1
