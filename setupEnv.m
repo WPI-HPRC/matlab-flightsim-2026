@@ -1,5 +1,5 @@
 function setupEnv()
-%% setupEnv - Configures simulation environment vars
+%% SETUPENV - Configurations simulation environment
 
 simPaths = {
 
@@ -9,8 +9,9 @@ simPaths = {
     fullfile('Models', 'Motor')
     fullfile('Models', 'Controls')
     fullfile('Models', 'Gravity')
-    genpath(fullfile('Models', 'Navigatior'))
-    genpath(fullfile('Models', 'RefactoredNav'))
+    genpath(fullfile('Models', 'Navigator'))
+    % genpath(fullfile('Models', 'RefactoredNav'))
+    % genpath(fullfile('Models', 'UKF'))
     
     % Atmospheric Model
     fullfile('Models', 'Atmosphere')
@@ -22,13 +23,13 @@ simPaths = {
     fullfile('Models', 'Kinematics')
 
     %% Guidance
-    fullfile('Guidance')
-
-    %% Controls
-    fullfile('Controls')
+    fullfile('Models', 'Guidance')
 
     %% Utilities
     fullfile('Utils');
+
+    %% Initialization
+    fullfile('Initialization');
 
     %% Plotting
     fullfile('Plotting');
@@ -39,5 +40,6 @@ simPaths = strjoin(simPaths, ';');
 addpath(simPaths);
 
 disp('[Setup] Configured Environment!');
+
 
 end

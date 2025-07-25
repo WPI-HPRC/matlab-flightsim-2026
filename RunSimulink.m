@@ -1,64 +1,50 @@
-%% WPI High Power Rocket MQP - Flight Simulator
-% Author: Daniel Pearson (djpearson@wpi.edu)
-% Version: 12.15.2024
+%% Vanguard Avionics - Flight Simulator
+% Author: Daniel Pearson (Dan.Pearson@jhuapl.edu)
+% Version: 7.24.2025
 
 clear variables; close all; clc;
 
-%% Configure constants and model data
-const = setupConstants();
-% kins = HPMR_MissileKinematics();
-% kins = HPMR_ModelRocketKinematics();
-kins = HPRC_RocketKinematics();
+%% Configure Models
+params.const = getConsts();
 
-% Kinematics 
-inds = getMissileInds(); % Control State Indices
-kfInds = getKfInds();
-kfConsts = getKfConsts();
+params.kins = HPRC_RocketKinematics();
 
-% Aerodynamics Model
-% AeroModel = initMissileAeroModel();
-% AeroModel = initRocketAeroModel();
-AeroModel = init_IREC2025_CFDModel();
+params.simInds = getSimInds();
 
-% IMU Model
-ImuModel = getASM330Params();
+% Aerodynamic Model
+params.AeroModel = init_IREC2025_CFDModel();
 
 % Motor Model
-MotorModel = initMotorModel();
+params.MotorModel = initMotorModel();
 
-%% Simulator Config **FOR SIMULINK USE LATER**
-% Time Configuration
+%% Simulation Parameters
 time.dt = 0.001; % [s] Time Step
-time.navDt = 0.01;
+time.navDt = 0.01; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
-% time.tf = 60*3; % [s] Final Time
-time.tf = 100;
+time.tf = 100; % [s] Final Time
 
-simCfg.time = time;
+params.time = time;
 
 %% Launch Site Initialization
-% [launchLat, launchLon, launchAlt] = selectLaunchLocation();
-launchLat =  42.27405; % [deg] Latitude - Football Field
+launchLat = 42.27405; % [deg] Latitude - Football Field
 launchLon = -71.81174; % [deg] Longitude - Football Field
 launchAlt = 10; % [m] Altitude MSL - Football Field
 
-% launchLat =  31.942558857776472; % [deg] Latitude - TX
-% launchLon = -102.20475753497975; % [deg] Longitude - TX
-% launchAlt = 875; % [m] Altitude MSL - TX
-
 launchLLA = [launchLat, launchLon, launchAlt];
-% currLLA = launchLLA;
 
 launch_ECEF_m = lla2ecef(launchLLA);
 
-% Attitude Initialization
+%% Attitude Initialization
 yaw_0 = deg2rad(0);
 roll_0 = deg2rad(0);
 pitch_0 = deg2rad(86);
- 
+
 eul_0 = [roll_0; pitch_0; yaw_0];
 
-q_0 = hpmr_eul2quat(roll_0, pitch_0, yaw_0);
+% DCM
+R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX');
+
+q_TB_0 = rotm2quat(R_TB_0);
 
 % Angular Rate Initialization
 w_ib_x = 1e-10; % [rad/s]
@@ -66,29 +52,29 @@ w_ib_y = 1e-10; % [rad/s]
 w_ib_z = 1e-10; % [rad/s]
 
 % Velocity Initialization
-R_ET = [
-    -sind(launchLat)*cosd(launchLon), -sind(launchLon), -cosd(launchLat)*cosd(launchLon);
-    -sind(launchLat)*sind(launchLon),  cosd(launchLon), -cosd(launchLat)*sind(launchLon);
-     cosd(launchLat),            0,         -sind(launchLat)
-];
+% R_ET = [
+%     -sind(launchLat)*cosd(launchLon), -sind(launchLon), -cosd(launchLat)*cosd(launchLon);
+%     -sind(launchLat)*sind(launchLon),  cosd(launchLon), -cosd(launchLat)*sind(launchLon);
+%      cosd(launchLat),            0,         -sind(launchLat)
+% ];
+R_ET = DCM_NED2ECEF(launchLat, launchLon);
 
-R_TB = hpmr_quat2rotm(q_0);
+R_TB = quat2rotm(q_TB_0);
 R_EB = R_ET * R_TB;
 
-V_0_B = [1e-5; 1e-5; 1e-5];
-
-V_0_E = R_EB * V_0_B;
+v_0_B = [1e-10; 1e-10; 1e-10]; % [m/s]
+v_0_E = R_EB * v_0_B;
 
 % Initial Mass
-m_0 = kins.m_0 + MotorModel.emptyWt + MotorModel.propWt;
+m_0 = params.kins.m_0 + params.MotorModel.emptyWt + params.MotorModel.propWt;
 
 %% State Initialization
 x_0 = [
-    q_0;
+    q_TB_0';
     launch_ECEF_m';
-    V_0_E(1);
-    V_0_E(2);
-    V_0_E(3);
+    v_0_E(1);
+    v_0_E(2);
+    v_0_E(3);
     w_ib_x;
     w_ib_y;
     w_ib_z;
@@ -96,64 +82,25 @@ x_0 = [
 ];
 
 %% Initialize Navigator
-kfParams = initNavParams(kins);
-assignin('base', 'kfParams', kfParams);
+params.navInds = getNavInds();
+params.navConst = getNavConsts();
+params.navParams = initNavParams(params);
 
-N = length(kfParams.x);
+%% Initialize Simulink
+initSimulinkBus(params);
 
-elems(1) = Simulink.BusElement;
-elems(1).Name = 'x';
-elems(1).Dimensions = [N 1];
-
-elems(2) = Simulink.BusElement;
-elems(2).Name = 'x_pred';
-elems(2).Dimensions = [N 1];
-
-elems(3) = Simulink.BusElement;
-elems(3).Name = 'Q_k';
-elems(3).Dimensions = [N N];
-
-elems(4) = Simulink.BusElement;
-elems(4).Name = 'P';
-elems(4).Dimensions = [N N];
-
-elems(5) = Simulink.BusElement;
-elems(5).Name = 'P_min';
-elems(5).Dimensions = [N N];
-
-elems(6) = Simulink.BusElement;
-elems(6).Name = 'f_pred';
-elems(6).Dimensions = [N 1];
-
-kfParamsBus = Simulink.Bus;
-kfParamsBus.Elements = elems;
-
-assignin('base', 'kfParamsBus', kfParamsBus);
-
-%% Load Simulink Model
 modelName = 'FlightSimulation';
-saveRate = 1000; % [Hz]
+saveRate = 1 / time.dt;
 saveDir = fullfile(pwd, 'SIM_OUT');
 
 % Open Simulation
 open_system(modelName);
 
-% Start Timer
-tic
+% Start Time
+tic;
 
-SimOut = sim(modelName, 'StopTime', num2str(simCfg.time.tf), 'SaveOutput', 'on');
+SimOut = sim(modelName, 'StopTime', num2str(params.time.tf), 'SaveOutput', 'on');
 
 runTime = toc;
 
 fprintf("Run Time: %.1f sec\n", runTime);
-
-% Assign Parameters
-assignin('base', 'const', const); 
-assignin('base', 'kins', kins);
-assignin('base', 'inds', inds);
-assignin('base', 'AeroModel', AeroModel);
-assignin('base', 'ImuModel', ImuModel);
-assignin('base', 'MotorModel', MotorModel);
-assignin('base', 'simCfg', simCfg);
-assignin('base', 'launchLLA', launchLLA);
-assignin('base', 'x_0', x_0);
