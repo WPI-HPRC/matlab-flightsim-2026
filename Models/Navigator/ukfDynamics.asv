@@ -1,0 +1,12 @@
+function x_next = ukfDynamics(x, dt, u, navInds)
+
+    f = @(x) predictionFunction(x, u, navInds);
+
+    k1 = f(x);
+    k2 = f(x + 0.)
+
+    q = x_next(navInds.quat);
+
+    x_next(navInds.quat) = q / norm(q);
+
+end

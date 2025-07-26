@@ -17,7 +17,7 @@ simPaths = {
     fullfile('Models', 'Atmosphere')
 
     % IMU Model
-    fullfile('Models', 'IMU')
+    genpath(fullfile('Models', 'Sensors'))
 
     % Kinematics
     fullfile('Models', 'Kinematics')
