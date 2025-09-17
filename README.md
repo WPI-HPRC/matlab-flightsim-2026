@@ -1,6 +1,6 @@
 # Vanguard Flight Simulation 
 
-This repository contains a MATLAB+SIMULINK flight simulatiojn environment
+This repository contains a MATLAB+SIMULINK flight simulation environment
 for the Vanguard vehicle. It models rocket dynamics, controls, and
 environmental effects.
 
@@ -46,12 +46,12 @@ environmental effects.
     The interpolation functons will take care of anything you need.
 3. Upload any new motor configuration files to `Models\Motor\EngineData`
     - The simulation inputs .RSE files which can be obtained for your motor
-    from [ThrustCurve.org][https://www.ThrustCurve.org]
+    from [ThrustCurve.org](https://www.ThrustCurve.org)
 
 ## Typical Workflow - Configuring new sensors
 Currently, this is a hardcoded process... `Models\Sensors\Params` has some
 examples of sensors used on the 
-[Vanguard V2.0 Flight Computer][https://github.com/Frostydev-Avionics/Vanguard-PCB].
+[Vanguard V2.0 Flight Computer](https://github.com/Frostydev-Avionics/Vanguard-PCB).
 These sensors are then configured and used in the Simulink model in the
 Flight Computer block, and added to the SensorBus for use elsewhere
 in the model.
