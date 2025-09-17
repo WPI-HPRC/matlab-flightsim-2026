@@ -26,6 +26,14 @@ elems(5) = Simulink.BusElement;
 elems(5).Name = 'P_min';
 elems(5).Dimensions = [N N];
 
+elems(6) = Simulink.BusElement;
+elems(6).Name = 'W_m';
+elems(6).Dimensions = [1 (N*2+1)];
+
+elems(7) = Simulink.BusElement;
+elems(7).Name = 'W_c';
+elems(7).Dimensions = [1 (N*2+1)];
+
 navBus = Simulink.Bus;
 navBus.Elements = elems;
 

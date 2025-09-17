@@ -16,9 +16,7 @@ function P = initErrorCov(inds)
     P(sub2ind(size(P), inds.gyroBias, inds.gyroBias)) = (deg2rad(0.5))^2; % [rad/s]
 
     % === Accelerometer Bias Error ===
-    P(inds.accelBias(1:2), inds.accelBias(1:2)) = (0.5)^2; % [m/s/s]
-    P(inds.accelBias(3),   inds.accelBias(3))   = (0.5)^2; % [m/s/s]
-
+    P(sub2ind(size(P), inds.accelBias, inds.accelBias)) = (0.5)^2;
     % === Magnetometer Bias Error ===
     P(sub2ind(size(P), inds.magBias, inds.magBias)) = (30)^2;  % 30 uT uncertainty
 

@@ -1,5 +1,5 @@
 %% Vanguard Avionics - Flight Simulator
-% Author: Daniel Pearson (Dan.Pearson@jhuapl.edu)
+% Author: Daniel Pearson (djpearson@wpi.edu)
 % Version: 7.24.2025
 
 clear variables; close all; clc;
@@ -22,6 +22,8 @@ time.dt = 0.001; % [s] Time Step
 time.navDt = 0.01; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
 time.tf = 100; % [s] Final Time
+
+time.startTime = juliandate(datetime("now"));
 
 params.time = time;
 
