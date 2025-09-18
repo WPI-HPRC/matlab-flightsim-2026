@@ -29,7 +29,7 @@ environmental effects.
 ## Getting Started
 
 1. Open MATLAB.
-2. Ensure you have the "Aerospace ToolBox", "Navigation Toolbox", and "Aerospace Setblocks" add-ons
+2. Ensure you have the "Aerospace Toolbox", "Navigation Toolbox", and "Aerospace Setblocks" add-ons
 3. Run `setupEnv.m` to configure the simulation environment.
     - Anytime you add a new subfolder, this **NEEDS** to be re-run to add 
       it to path
