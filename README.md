@@ -29,14 +29,15 @@ environmental effects.
 ## Getting Started
 
 1. Open MATLAB.
-2. Ensure you have the "Aerospace Toolbox", "Navigation Toolbox", and "Aerospace Setblocks" add-ons
+2. Ensure you have the "Aerospace Toolbox", "Navigation Toolbox", and "Aerospace Blockset" add-ons
 3. Run `setupEnv.m` to configure the simulation environment.
     - Anytime you add a new subfolder, this **NEEDS** to be re-run to add 
       it to path
 4. Configure any models/parameters in `RunSimulink.m` as needed.
 5. Start the simulation with `RunSimulink.m`
 6. Utilize the plotting scripts in `Plotting/` to analyze the results!
-Note: PlotNav takes in (SimOut, params.navInds) as arguments
+Note: plotSim takes in (SimOut) as arguments: run ``plotSim(SimOut)`` in the command window
+Note: plotNav takes in (SimOut, params.navInds) as arguments: run ``plotNav(SimOut, params.navInds)`` in the command window
 
 ## Typical Workflow - Adding new vehicle
 1. Create new Vehicle "Kinematics" model in the Kinematics folder, following
