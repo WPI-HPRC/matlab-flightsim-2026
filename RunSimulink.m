@@ -7,12 +7,12 @@ clear variables; close all; clc;
 %% Configure Models
 params.const = getConsts();
 
-params.kins = HPRC_RocketKinematics();
+params.kins = HPMR_ModelRocketKinematics();
 
 params.simInds = getSimInds();
 
 % Aerodynamic Model
-params.AeroModel = init_IREC2025_CFDModel();
+params.AeroModel = initMissileAeroModel();
 
 % Motor Model
 params.MotorModel = initMotorModel();
