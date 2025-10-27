@@ -37,8 +37,8 @@ launchLLA = [launchLat, launchLon, launchAlt];
 launch_ECEF_m = lla2ecef(launchLLA);
 
 %% Attitude Initialization
-yaw_0 = deg2rad(0);
-roll_0 = deg2rad(0);
+yaw_0 = deg2rad(30);
+roll_0 = deg2rad(60);
 pitch_0 = deg2rad(86);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
