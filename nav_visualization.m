@@ -16,7 +16,7 @@ N = size(SimOut.R_BT.Data, 3);
 
 %display(R_BT)
 
-idx = round(linspace(1, N, numFrames));
+idx = round(linspace(1, size(pos, 3), numFrames));
 
 
 figure;
@@ -30,7 +30,7 @@ title('Rotation Matrix Orientation Animation');
 h = poseplot(quaternion(eye(3), 'rotmat', 'frame'), [0 0 0], 'Parent', ax);
 
 
-v = VideoWriter('D:\Users\abhay\Videos\QTests\NavEKFPos_60_30_86_mk3.avi');
+v = VideoWriter('D:\Users\abhay\Videos\QTests\NavEKFPos_60_60_86_mk5.avi');
 v.FrameRate = fps;
 open(v);
 
