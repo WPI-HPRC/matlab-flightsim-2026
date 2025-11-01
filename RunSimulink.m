@@ -19,13 +19,26 @@ params.MotorModel = initMotorModel();
 
 %% Simulation Parameters
 time.dt = 0.001; % [s] Time Step
-time.navDt = 0.01; % [s] Navigator dt
+time.navDt = 0.005; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
 time.tf = 100; % [s] Final Time
 
 time.startTime = juliandate(datetime("now"));
 
 params.time = time;
+
+%% Timekeeping variables
+
+time.gyroPropInterval = 0.01;
+time.velocityPropInterval = 0.025;
+time.magCorrectionInterval = 0.5;
+time.gpsCorrectionInterval = 0.75;
+
+time.lastGyroProp = 0;
+time.lastvelocityProp = 0;
+time.lastMagCorrect = 0;
+time.lastGPSCorrect = 0;
+
 
 %% Launch Site Initialization
 launchLat = 42.27405; % [deg] Latitude - Football Field
@@ -37,9 +50,9 @@ launchLLA = [launchLat, launchLon, launchAlt];
 launch_ECEF_m = lla2ecef(launchLLA);
 
 %% Attitude Initialization
-yaw_0 = deg2rad(60);
+yaw_0 = deg2rad(30);
 roll_0 = deg2rad(60);
-pitch_0 = deg2rad(86);
+pitch_0 = deg2rad(60);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
@@ -87,6 +100,70 @@ x_0 = [
 params.navInds = getNavInds();
 params.navConst = getNavConsts();
 params.navParams = initNavParams(params);
+
+%% Init EKF Params (P) (temporary, eventually move to better location)
+
+% TODO just guessing here
+
+quat_p = [params.navConst.asm330.quatStdDev^2;
+    params.navConst.asm330.quatStdDev^2;
+    params.navConst.asm330.quatStdDev^2];
+% or deg2rad(90)^2
+
+vel_p = [0.5^2; 0.5^2; 0.5^2];
+
+pos_p = [1^2; 1^2; 1^2];
+
+
+gyro_bias_p = [params.navConst.asm330.gyroBiasStdDev^2;
+    params.navConst.asm330.gyroBiasStdDev^2;
+    params.navConst.asm330.gyroBiasStdDev^2];
+
+accel_bias_p = [params.navConst.asm330.accelBiasStdDev^2;
+    params.navConst.asm330.accelBiasStdDev^2;
+    params.navConst.asm330.accelBiasStdDev^2];
+
+mag_bias_p = [30^2; 30^2; 30^2];
+baro_bias_p = [5^2];
+
+init_P = diag(cat(1, quat_p, vel_p, pos_p, gyro_bias_p, accel_bias_p, mag_bias_p, baro_bias_p));
+
+%% Init EKF Params (State)
+
+init_state = zeros(20, 1);
+init_state(1:4) = quatconj(q_TB_0);
+init_state(8:10) = zeros(3, 1);
+init_state(11:20) = 1e-6;
+
+%% Init EKF Params (Q_d)
+
+gyro_var = params.navConst.icm20948.gyroXYZ_var;
+gyro_bias_var = params.navConst.asm330.gyroBiasStdDev^2;
+
+accel_bias_var = params.navConst.asm330.accelBiasStdDev^2;
+
+mag_bias_var = [5^2];
+
+baro_bias_var = [7.5^2];
+
+
+%% Init EKF Params (R)
+
+R_grav = diag([params.navConst.icm20948.accelXY_var^2;
+    params.navConst.icm20948.accelXY_var^2;
+    params.navConst.icm20948.accelZ_var^2;]);
+
+%Abhay Note: Might be for a diff sensor but that's fine
+R_mag = diag([params.navConst.icm20948.magXYZ_var^2;
+    params.navConst.icm20948.magXYZ_var^2;
+    params.navConst.icm20948.magXYZ_var^2]);
+
+R_gps = diag([10^2, 10^2, 10^2]);
+
+R_baro = [20^2];
+
+
+
 
 %% Initialize Simulink
 initSimulinkBus(params);

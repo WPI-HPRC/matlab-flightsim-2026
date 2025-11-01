@@ -28,7 +28,7 @@ title('Rotation Matrix Orientation Animation');
 h = poseplot(quaternion(eye(3), 'rotmat', 'frame'), [0 0 0], 'Parent', ax);
 
 
-v = VideoWriter('D:\Users\abhay\Videos\QTests\Real_60_60_86_mk5.avi');
+v = VideoWriter('D:\Users\abhay\Videos\QTests\WorkingTrue.avi');
 v.FrameRate = fps;
 open(v);
 
