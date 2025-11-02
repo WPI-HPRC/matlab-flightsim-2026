@@ -21,7 +21,7 @@ if max(abs(rot_vec)) > 1.0e-21
     rot_vec_norm = norm(rot_vec);
     axis = rot_vec / rot_vec_norm;
     dq = [cos(rot_vec_norm / 2.0); (axis * sin(rot_vec_norm / 2.0))]';
-    q = quatmultiply(dq, state(1:4)');
+    q = quatmultiply(state(1:4)', dq);
     q = q / norm(q);
     newState(1:4) = q';
 end

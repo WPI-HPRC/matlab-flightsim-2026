@@ -40,7 +40,7 @@ for k = 1:length(idx)
     %r_ned = R_ET' * dr';
     r_ned = pos(idx(k), :);
     %q_orientation = quaternion(quat2dcm(quat(:,:,idx(k))')', 'rotmat', 'frame');
-    q_orientation = quaternion(quat2dcm(quat(idx(k), :)), 'rotmat', 'frame');
+    q_orientation = quaternion(quat(idx(k), :));
     set(h, 'Orientation', q_orientation, 'Position', r_ned);
     %set(h, 'Orientation', q_orientation);
     drawnow limitrate;

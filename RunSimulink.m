@@ -52,14 +52,17 @@ launch_ECEF_m = lla2ecef(launchLLA);
 %% Attitude Initialization
 yaw_0 = deg2rad(30);
 roll_0 = deg2rad(60);
-pitch_0 = deg2rad(60);
+pitch_0 = deg2rad(120);
+%yaw_0 = deg2rad(0);
+%roll_0 = deg2rad(0);
+%pitch_0 = deg2rad(120);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
 % DCM
-R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX');
+R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX')';
 
-q_TB_0 = rotm2quat(R_TB_0);
+q_TB_0 = dcm2quat(R_TB_0);
 
 % Angular Rate Initialization
 w_ib_x = 1e-10; % [rad/s]
@@ -74,7 +77,7 @@ w_ib_z = 1e-10; % [rad/s]
 % ];
 R_ET = DCM_NED2ECEF(launchLat, launchLon);
 
-R_TB = quat2rotm(q_TB_0);
+R_TB = quat2dcm(q_TB_0);
 R_EB = R_ET * R_TB;
 
 v_0_B = [1e-10; 1e-10; 1e-10]; % [m/s]

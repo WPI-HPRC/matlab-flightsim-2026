@@ -19,12 +19,11 @@ end
 % TODO One day implement average of this and last state
 g_i = [0; 0; 9.81]; % Gravity in z is positive
 
-v_dot = quat2rotm(q) * accel_meas + g_i;
+v_dot = quat2dcm(quatconj(q)) * accel_meas + g_i;
 
 v = prevState(5:7) + v_dot * dt;
 
 r = prevState(8:10) + v * dt;
-
 
 newState(1:4) = q';
 newState(5:7) = v;
