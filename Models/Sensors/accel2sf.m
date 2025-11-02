@@ -2,7 +2,7 @@ function sf = accel2sf(a_b, R_BT)
 % ACCEL2SF - Computes specific force from linear accel and gravity.
 % INPUTS:
 %   a_b - [3x1] Linear acceleration in body frame
-%   R_BT - [3x3] Rotation matrix from NED to Body
+%   R_BT - [3x3] DCM from NED to Body
 % OUTPUTS:
 %   sf - [3x1] Specific force in body frame (excludes gravity)
 
