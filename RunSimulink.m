@@ -134,9 +134,12 @@ init_P = diag(cat(1, quat_p, vel_p, pos_p, gyro_bias_p, accel_bias_p, mag_bias_p
 %% Init EKF Params (State)
 
 init_state = zeros(20, 1);
-init_state(1:4) = quatconj(q_TB_0);
+init_state(1:4) = dcm2quat(R_EB');
 init_state(8:10) = zeros(3, 1);
+init_state(8:10) = launch_ECEF_m';
 init_state(11:20) = 1e-6;
+
+init_lastCalcTimes = zeros(5, 1);
 
 %% Init EKF Params (Q_d)
 
@@ -152,18 +155,18 @@ baro_bias_var = [7.5^2];
 
 %% Init EKF Params (R)
 
-R_grav = diag([params.navConst.icm20948.accelXY_var^2;
-    params.navConst.icm20948.accelXY_var^2;
-    params.navConst.icm20948.accelZ_var^2;]);
-
-%Abhay Note: Might be for a diff sensor but that's fine
-R_mag = diag([params.navConst.icm20948.magXYZ_var^2;
+R_vec = [(params.navConst.icm20948.accelXY_var * 9.8)^2;
+    (params.navConst.icm20948.accelXY_var * 9.8)^2;
+    (params.navConst.icm20948.accelZ_var * 9.8)^2;
     params.navConst.icm20948.magXYZ_var^2;
-    params.navConst.icm20948.magXYZ_var^2]);
+    params.navConst.icm20948.magXYZ_var^2;
+    params.navConst.icm20948.magXYZ_var^2;
+    10^2;
+    10^2;
+    10^2;
+    20^2];
 
-R_gps = diag([10^2, 10^2, 10^2]);
 
-R_baro = [20^2];
 
 
 
