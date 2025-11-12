@@ -29,10 +29,11 @@ params.time = time;
 
 %% Timekeeping variables
 
-time.gyroPropInterval = 0.01;
-time.velocityPropInterval = 0.025;
-time.magCorrectionInterval = 0.5;
-time.gpsCorrectionInterval = 0.75;
+IMUPropInterval = 0.005;
+accelCorrectionInterval = 0.01;
+magCorrectionInterval = 0.025;
+gpsCorrectionInterval = 0.1;
+baroCorrectionInterval = 1;
 
 time.lastGyroProp = 0;
 time.lastvelocityProp = 0;
