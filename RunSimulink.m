@@ -29,11 +29,11 @@ params.time = time;
 
 %% Timekeeping variables
 
-IMUPropInterval = 0.005;
-accelCorrectionInterval = 0.01;
-magCorrectionInterval = 0.025;
+IMUPropInterval = 0.01;
+accelCorrectionInterval = 0.025;
+magCorrectionInterval = 0.05;
 gpsCorrectionInterval = 0.1;
-baroCorrectionInterval = 1;
+baroCorrectionInterval = 0.5;
 
 time.lastGyroProp = 0;
 time.lastvelocityProp = 0;
@@ -49,6 +49,17 @@ launchAlt = 10; % [m] Altitude MSL - Football Field
 launchLLA = [launchLat, launchLon, launchAlt];
 
 launch_ECEF_m = lla2ecef(launchLLA);
+
+%% Sensor characteristics
+
+%Defined from nose at [0, 0, 0] in accordance with roll pitch yaw
+%directions. Standard positive and negative
+% TODO is this good convention? Matlab uses different but I don't like it
+% See: https://www.mathworks.com/help/releases/R2025b/aeroblks/threeaxisaccelerometer.html
+CoM = [-0.1; 0.001; 0.001]; % [m] in NED TODO edit this with new value or as a func of the flight dynamics
+
+accelOriginLoc = [-0.2; 0.05; 0.05]; % TODO update with real value. Also from same frame as CoM
+
 
 %% Attitude Initialization
 yaw_0 = deg2rad(30);

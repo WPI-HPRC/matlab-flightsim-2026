@@ -46,8 +46,8 @@ function plotNav(out, kfInds)
     % === Navigation State Estimates ===
     % Get data from posterior state output (22x1 state vector)
 
-    navTime = out.NavBus.newState.Time;       
-    x_est = out.NavBus.newState.Data'; 
+    navTime = out.NavBus.state.Time;       
+    x_est = out.NavBus.state.Data'; 
     P = out.NavBus.P.Data;           
 
     q_est   = x_est(1:4, :);        % Quaternion
