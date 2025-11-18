@@ -21,7 +21,7 @@ params.MotorModel = initMotorModel();
 time.dt = 0.001; % [s] Time Step
 time.navDt = 0.01; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
-time.tf = 100; % [s] Final Time
+time.tf = 1000; % [s] Final Time
 
 time.startTime = juliandate(datetime("now"));
 

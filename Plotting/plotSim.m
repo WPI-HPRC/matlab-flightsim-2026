@@ -53,6 +53,7 @@ grid on;
 title('Euler Angles');
 ylabel('Angle (deg)');
 xlabel('Time (s)');
+legend('Roll', 'Pitch', "Yaw")
 
 %% Position ECI
 
