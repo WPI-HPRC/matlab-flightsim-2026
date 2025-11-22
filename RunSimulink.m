@@ -152,6 +152,7 @@ init_state(8:10) = launch_ECEF_m';
 init_state(11:20) = 1e-6;
 
 init_lastCalcTimes = zeros(5, 1);
+% In order: FastIMUProp, Accel, mag, gps, baro
 
 %% Init EKF Params (Q_d)
 
