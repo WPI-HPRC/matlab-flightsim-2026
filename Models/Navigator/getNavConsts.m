@@ -1,7 +1,7 @@
 function consts = getNavConsts()
 
-    asm330.accelStdDev = 2.1582e-3; % [m/s/s]
-    asm330.gyroStdDev  = 4.4e-6; % [rad/s]
+    asm330.accelStdDev = sqrt(0.0383 + 0.005); % [m/s/s]
+    asm330.gyroStdDev  = sqrt(0.0051 + 0.005); % [rad/s]
     asm330.gyroBiasStdDev = 4.9e-5; % [rad/s] Bias Instability Guess
     asm330.quatStdDev = deg2rad(1); % [rad] Quaternion Error
     asm330.accelBiasStdDev = 1e-3;

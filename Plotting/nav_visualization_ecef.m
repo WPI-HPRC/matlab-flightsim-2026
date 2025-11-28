@@ -5,6 +5,7 @@ fps = 60;
 numFrames = simDuration * fps;
 
 quat = SimOut.NavBus.state.Data(:, 1:4);
+%quat = SimOut.abhay_midairtriad.Data(:, 1:4); % This is to view the mid-air triad re-orientation
 pos = SimOut.NavBus.state.Data(:, 8:10);
 N = size(quat, 1);
 

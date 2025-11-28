@@ -50,15 +50,6 @@ launchLLA = [launchLat, launchLon, launchAlt];
 
 launch_ECEF_m = lla2ecef(launchLLA);
 
-%% Sensor characteristics
-
-%Defined from nose at [0, 0, 0] in accordance with roll pitch yaw
-%directions. Standard positive and negative
-% TODO is this good convention? Matlab uses different but I don't like it
-% See: https://www.mathworks.com/help/releases/R2025b/aeroblks/threeaxisaccelerometer.html
-CoM = [-0.1; 0.001; 0.001]; % [m] in NED TODO edit this with new value or as a func of the flight dynamics
-
-accelOriginLoc = [-0.2; 0.05; 0.05]; % TODO update with real value. Also from same frame as CoM
 
 
 %% Attitude Initialization
@@ -120,14 +111,14 @@ params.navParams = initNavParams(params);
 
 % TODO just guessing here
 
-quat_p = [params.navConst.asm330.quatStdDev^2;
-    params.navConst.asm330.quatStdDev^2;
-    params.navConst.asm330.quatStdDev^2];
+quat_p = [(params.navConst.asm330.quatStdDev * 2)^2;
+    (params.navConst.asm330.quatStdDev * 2)^2;
+    (params.navConst.asm330.quatStdDev * 2)^2];
 % or deg2rad(90)^2
 
-vel_p = [0.5^2; 0.5^2; 0.5^2];
+vel_p = [5^2; 5^2; 5^2];
 
-pos_p = [1^2; 1^2; 1^2];
+pos_p = [5^2; 5^2; 5^2];
 
 
 gyro_bias_p = [params.navConst.asm330.gyroBiasStdDev^2;
@@ -165,24 +156,72 @@ mag_bias_var = [5^2];
 
 baro_bias_var = [7.5^2];
 
+%% Sensor characteristics
+
+%Defined from nose at [0, 0, 0] in accordance with roll pitch yaw. Going
+%down the body is -x. y and z are just arbitrary for now
+%directions. Standard positive and negative
+% TODO is this good convention? Matlab uses different but I don't like it
+% See: https://www.mathworks.com/help/releases/R2025b/aeroblks/threeaxisaccelerometer.html
+
+num_imu = 2;
+
+CoM = [-0.1; 0.001; 0.001]; % [m] in NED TODO edit this with new value or as a func of the flight dynamics
+
+icmOriginLoc = [-0.2; 0.05; 0.05]; % TODO update with real value. Also from same frame as CoM
+asmOriginLoc = [-0.2; -0.05; -0.05];
+
+% TODO ansitropic vs isotropic (current impl) is a subject of future
+% research
+accel_avg_vars = diag([params.navConst.icm20948.accelXY_var, params.navConst.asm330.accelStdDev^2]);
+accel_avg_vars_inv = diag([1.0 / params.navConst.icm20948.accelXY_var, 1.0 / params.navConst.asm330.accelStdDev^2]);
+%disp("Vars")
+%disp(accel_avg_vars)
+% Average variances over 3 dimensions
+
+R = [icmOriginLoc, asmOriginLoc];
+
+
+r_bar = R * accel_avg_vars_inv * [1; 1];
+M = R * accel_avg_vars_inv * R';
+M_pinv = pinv(M);
+w_hat = accel_avg_vars_inv * (ones(2, 1) - R' * (M_pinv * r_bar));
+w_accel = w_hat / sum(w_hat);
+
+
+
+%disp("W accel")
+%w_accel
+
+cimu_origin = w_accel(1) * icmOriginLoc + w_accel(2) * asmOriginLoc;
+%cimu_origin
+
+
+gyro_avg_vars = diag([params.navConst.icm20948.gyroXYZ_var, params.navConst.asm330.gyroStdDev^2]);
+gyro_avg_vars_inv = diag([1.0 / params.navConst.icm20948.gyroXYZ_var, 1.0 / params.navConst.asm330.gyroStdDev^2]);
+
+w_gyro = gyro_avg_vars_inv / sum(gyro_avg_vars_inv);
+
+%disp("W gyro")
+%w_gyro
+
+
 
 %% Init EKF Params (R)
 
-R_vec = [(params.navConst.icm20948.accelXY_var * 9.8)^2;
-    (params.navConst.icm20948.accelXY_var * 9.8)^2;
-    (params.navConst.icm20948.accelZ_var * 9.8)^2;
-    params.navConst.icm20948.magXYZ_var^2;
-    params.navConst.icm20948.magXYZ_var^2;
-    params.navConst.icm20948.magXYZ_var^2;
+R_vec = [(sqrt(params.navConst.icm20948.accelXY_var) * 9.8)^2;
+    (sqrt(params.navConst.icm20948.accelXY_var) * 9.8)^2;
+    (sqrt(params.navConst.icm20948.accelZ_var) * 9.8)^2;
+    params.navConst.icm20948.magXYZ_var;
+    params.navConst.icm20948.magXYZ_var;
+    params.navConst.icm20948.magXYZ_var;
     10^2;
     10^2;
     10^2;
-    10^2;
-    10^2;
-    10^2;
-    20^2];
-
-
+    5^2;
+    5^2;
+    5^2;
+    10^2];
 
 
 

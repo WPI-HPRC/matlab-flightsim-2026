@@ -1,4 +1,4 @@
-function sf = accel2sf(a_b, R_BT, dw_ib_B, w_ib_B, CoM, accelOriginLoc)
+function sf = accel2sf(a_b, R_BT, dw_ib_B, w_ib_B, accelOriginLoc)
 % ACCEL2SF - Computes specific force from linear accel and gravity.
 % INPUTS:
 %   a_b - [3x1] Linear acceleration in body frame
@@ -8,6 +8,13 @@ function sf = accel2sf(a_b, R_BT, dw_ib_B, w_ib_B, CoM, accelOriginLoc)
 % OUTPUTS:
 %   sf - [3x1] Specific force in body frame (excludes gravity)
 
+    %size(a_b)
+    %size(R_BT)
+    %size(dw_ib_B)
+    %size(w_ib_B)
+    %size(CoM)
+    %size(accelOriginLoc)
+
     g_NED = [0; 0; 9.80665];  % Gravity in NED
     %{
     d = [-1.0 * (accelOriginLoc(1) - CoM(1));
@@ -15,7 +22,7 @@ function sf = accel2sf(a_b, R_BT, dw_ib_B, w_ib_B, CoM, accelOriginLoc)
         -1.0 * (accelOriginLoc(3) - CoM(3))];
     %}
     % This is the matlab definition that I don't like.
-    d = accelOriginLoc - CoM; % In my body axes definition
+    d = accelOriginLoc; % In my body axes definition
 
     g_B = R_BT * g_NED;       % Rotate gravity to body frame
 

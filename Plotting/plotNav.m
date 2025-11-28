@@ -18,28 +18,21 @@ function plotNav(out, kfInds)
     %R_ET = DCM_NED2ECEF(lat0, lon0); % This is ECEF <- NED
     R_TE2 = dcmecef2ned(lla_ref(1), lla_ref(2));
     
-    % Position: ECEF to NED = transpose(R_ET) * (r_ecef - r_ref)
+
+    % DELETEME
     r_ref = out.P_E.Data(1,:)';
     
-    N_truth = size(out.P_E.Data,1);
-    pos_T_true = zeros(3, N_truth);
-    for i = 1:N_truth
-        r_ecef = out.P_E.Data(i,:)';
-        pos_T_true(:,i) = R_TE2 * (r_ecef - r_ref);
-    end
+    % Position: ECEF
+    pos_T_true = out.P_E.Data(:, :)';
     
-    % Velocity: rotate velocity vector from ECEF to NED (ignoring reference velocity)
-    vel_T_true = zeros(3, N_truth);
-    for i = 1:N_truth
-        v_ecef = out.V_E.Data(i,:)';
-        vel_T_true(:,i) = R_TE2 * v_ecef;
-    end
+    % Velocity: ECEF
+    vel_T_true = out.V_E.Data(:, :)';
 
     % --- Orientation from Truth ---
     N = size(out.R_BT.Data, 3);
     q_true = zeros(4, N);  % [4 x N]
     for i = 1:N
-        R = out.R_BT.Data(:,:,i);  
+        R = out.R_BT.Data(:,:,i) * out.R_TE.Data(:, :, i);  
         q_true(:,i) = rotm2quat(R');
     end
 
@@ -57,6 +50,10 @@ function plotNav(out, kfInds)
     accb_est = x_est(14:16, :);      % Accel bias
     mb_est = x_est(17:19, :);       % Mag Bias
     p_est = x_est(20, :);           % Baro Bias
+
+    q_est(:, 1) = q_est(:, 2);
+    vel_est(:, 1) = vel_est(:, 2);
+    pos_est(:, 1) = pos_est(:, 2);
 
     % === Resample Ground Truth ===
     pos_true_resampled = resampleTimeSeries(pos_T_true, truthTime, navTime);
@@ -102,17 +99,20 @@ function plotNav(out, kfInds)
     
     % === Plotting ===
     % Attitude covariance is for small angle errors (δθ), not full quaternion
+
+    % Convert covariance of small angle to degrees
+    P(1:3, 1:3, :) = P(1:3, 1:3, :) * (180 / pi);
     
     plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Yaw', 'Pitch', 'Roll'});
-    plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error (m)', {'North', 'East', 'Down'});
-    plotWithCovariance(navTime, vel_err, P, kfInds_mekf.vel, 'Velocity Error (m/s)', {'V_N', 'V_E', 'V_D'});
+    plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error ECEF(m)', {'X', 'Y', 'Z'});
+    plotWithCovariance(navTime, vel_err, P, kfInds_mekf.vel, 'Velocity Error ECEF (m/s)', {'X', 'Y', 'Z'});
     plotWithCovariance(navTime, gb_err, P, kfInds_mekf.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, accb_err, P, kfInds_mekf.accelBias, 'Acc Bias Estimation (somethings)', {'X', 'Y', 'Z'});
+    plotWithCovariance(navTime, accb_err, P, kfInds_mekf.accelBias, 'Acc Bias Estimation (m/s^2)', {'X', 'Y', 'Z'});
     plotWithCovariance(navTime, mb_err, P, kfInds_mekf.magBias, 'Mag Bias Estimation (uT)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, p_err, P, kfInds_mekf.pBias, 'Baro Bias Estimation (somethings)', {'Z'});
+    plotWithCovariance(navTime, p_err, P, kfInds_mekf.pBias, 'Baro Bias Estimation (Pa)', {'-D'});
     
     % the small angle errors (δθ) rather than quaternion errors
-    % TODO: Abhay figure this one out
+    % TODO: figure this one out
     %plotWithCovariance(navTime, q_err, P, kfInds_mekf.quat, 'Quaternion Error', {'q_w', 'q_x', 'q_y', 'q_z'});
 end
 
@@ -131,11 +131,16 @@ function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
     sigma = zeros(N, dim);
     for i = 1:N
         for j = 1:dim
-            if ismember(inds, [1:4]) 
+            
+            %sigma(i,j) = sqrt(P(inds(j), inds(j), i));
+            
+            if ismember(inds, [1:3]) 
                 sigma(i,j) = sqrt(P(inds(j), inds(j), i));
             else
                 sigma(i, j) = sqrt(P(inds(j) - 1, inds(j) - 1, i));  % Small angle cov is 1-3 vs. quat state which is 1-4
             end
+            
+            
         end
     end
 
