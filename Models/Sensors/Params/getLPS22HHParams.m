@@ -10,7 +10,7 @@ params.max_range = 126000;           % Up to ~1260 hPa = 126000 Pa
 params.sens = 1.0;                   % 1 Pa per LSB (from datasheet)
 
 % Bias [Pa]
-params.bias = 50 * randn();          % ±50 Pa (~0.5 mbar) bias, tunable
+params.bias = 20;          % ±50 Pa (~0.5 mbar) bias, tunable
 
 % Noise [Pa]
 params.noise = 0.65;                 % 0.65 Pa RMS in low-noise mode

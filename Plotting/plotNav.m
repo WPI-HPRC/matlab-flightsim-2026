@@ -8,27 +8,13 @@ function plotNav(out, kfInds)
     % === Extract Data ===
     truthTime = out.tout;
     
-    % --- Convert Truth Position from ECEF → NED ---
-    lla_ref = ecef2lla(out.P_E.Data(1,:)); % Use ecef2lla or provide lat, lon, alt manually if no toolbox
-    lat0 = rad2deg(lla_ref(1));  % Convert rad to deg if needed
-    lon0 = rad2deg(lla_ref(2));
-    alt0 = lla_ref(3);
-    
-    % Compute rotation matrix once
-    %R_ET = DCM_NED2ECEF(lat0, lon0); % This is ECEF <- NED
-    R_TE2 = dcmecef2ned(lla_ref(1), lla_ref(2));
-    
-
-    % DELETEME
-    r_ref = out.P_E.Data(1,:)';
-    
     % Position: ECEF
     pos_T_true = out.P_E.Data(:, :)';
     
     % Velocity: ECEF
     vel_T_true = out.V_E.Data(:, :)';
 
-    % --- Orientation from Truth ---
+    % --- Orientation from Truth (ECEF) ---
     N = size(out.R_BT.Data, 3);
     q_true = zeros(4, N);  % [4 x N]
     for i = 1:N
@@ -61,9 +47,9 @@ function plotNav(out, kfInds)
     q_true_resampled   = resampleTimeSeries(q_true, truthTime, navTime);
         
     % === Helper: Quaternion to Euler ===
-    quatToEulerZYX = @(q) rad2deg(quat2eul(q', 'ZYX'));  % N x 3
-    eul_true = quatToEulerZYX(q_true_resampled);
-    eul_est  = quatToEulerZYX(q_est);
+    quatToEulerXYZ = @(q) rad2deg(quat2eul(q', 'XYZ'));  % N x 3
+    eul_true = quatToEulerXYZ(q_true_resampled);
+    eul_est  = quatToEulerXYZ(q_est);
     
     eul_error = wrapTo180(eul_true - eul_est);  % deg
 
@@ -80,7 +66,7 @@ function plotNav(out, kfInds)
         qE = q_est(:, i)';
         q_err(i, :) = quatmultiply(qT, quatinv(qE));  
     end
-
+    
     % === Bias Error ===
     gb_err = gb_est - ICM20948_PARAMS.gyro.bias;
     mb_err = mb_est - MMC5983_PARAMS.bias(1:3);
@@ -101,9 +87,9 @@ function plotNav(out, kfInds)
     % Attitude covariance is for small angle errors (δθ), not full quaternion
 
     % Convert covariance of small angle to degrees
-    P(1:3, 1:3, :) = P(1:3, 1:3, :) * (180 / pi);
+    P(1:3, 1:3, :) = P(1:3, 1:3, :) * (180.0 / pi);
     
-    plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Yaw', 'Pitch', 'Roll'});
+    plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Roll', 'Pitch', 'Yaw'});
     plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error ECEF(m)', {'X', 'Y', 'Z'});
     plotWithCovariance(navTime, vel_err, P, kfInds_mekf.vel, 'Velocity Error ECEF (m/s)', {'X', 'Y', 'Z'});
     plotWithCovariance(navTime, gb_err, P, kfInds_mekf.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'});
@@ -113,7 +99,7 @@ function plotNav(out, kfInds)
     
     % the small angle errors (δθ) rather than quaternion errors
     % TODO: figure this one out
-    %plotWithCovariance(navTime, q_err, P, kfInds_mekf.quat, 'Quaternion Error', {'q_w', 'q_x', 'q_y', 'q_z'});
+    %plotWithCovariance(navTime, q_err(2:4), P, [1:3], 'Quaternion Error', {'q_x', 'q_y', 'q_z'});
 end
 
 function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
@@ -149,7 +135,7 @@ function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
         subplot(dim,1,j);
         plot(timeVec, err(:,j), 'r', 'DisplayName', 'Error'); hold on;
         plot(timeVec, sigma(:,j), 'b--', 'DisplayName', '+1\sigma');
-        plot(timeVec, -sigma(:,j), 'b--', 'DisplayName', '-1\sigma');
+        plot(timeVec, -1.0 * sigma(:,j), 'b--', 'DisplayName', '-1\sigma');
         ylabel([labels{j}, ' ', yLabelStr]);
         grid on;
         legend();

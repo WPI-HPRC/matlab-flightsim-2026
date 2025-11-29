@@ -21,6 +21,7 @@ params.MotorModel = initMotorModel();
 time.dt = 0.001; % [s] Time Step
 time.navDt = 0.005; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
+t0 = -10; % [s] Initial Time
 time.tf = 100; % [s] Final Time
 
 time.startTime = juliandate(datetime("now"));
@@ -130,7 +131,7 @@ accel_bias_p = [params.navConst.asm330.accelBiasStdDev^2;
     params.navConst.asm330.accelBiasStdDev^2];
 
 mag_bias_p = [30^2; 30^2; 30^2];
-baro_bias_p = [5^2];
+baro_bias_p = [10^2];
 
 init_P = diag(cat(1, quat_p, vel_p, pos_p, gyro_bias_p, accel_bias_p, mag_bias_p, baro_bias_p));
 
@@ -215,9 +216,9 @@ R_vec = [(sqrt(params.navConst.icm20948.accelXY_var) * 9.8)^2;
     params.navConst.icm20948.magXYZ_var;
     params.navConst.icm20948.magXYZ_var;
     params.navConst.icm20948.magXYZ_var;
-    10^2;
-    10^2;
-    10^2;
+    2^2;
+    2^2;
+    2^2;
     5^2;
     5^2;
     5^2;

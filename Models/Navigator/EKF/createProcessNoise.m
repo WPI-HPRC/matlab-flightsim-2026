@@ -5,13 +5,13 @@ function Q_d = createProcessNoise(dt)
 
 % Already defined variables. Find better way:
 gyro_var = 0.0051;
-gyro_bias_var = (4.9e-5 * 9.8)^2;
+gyro_bias_var = (4.9e-2 * 9.8)^2;
 
-accel_bias_var = (1e-3 * 9.8)^2;
+accel_bias_var = (1e-1 * 9.8)^2;
 
-mag_bias_var = [5^2];
+mag_bias_var_diag = diag([1^2; 1^2; 1^2]);
 
-baro_bias_var = [7.5^2];
+baro_bias_var = 1^2;
 
 R_grav = diag([(0.0383 * 9.8)^2;
     (0.0383 * 9.8)^2;
@@ -25,10 +25,6 @@ R_mag = diag([0.7263^2;
 R_gps = diag([10^2, 10^2, 10^2]);
 
 R_baro = [20^2];
-
-
-
-
 
 
 
@@ -61,7 +57,7 @@ Q_d(13:15, 4:6) = -1.0 * accel_bias_var_diag * (dt^2 / 2.0);
 Q_d(13:15, 7:9) = -1.0 * accel_bias_var_diag * (dt^2 / 2.0);
 Q_d(13:15, 13:15) = accel_bias_var_diag * dt;
 
-Q_d(16:18, 16:18) = mag_bias_var * dt;
+Q_d(16:18, 16:18) = mag_bias_var_diag * dt;
 
 Q_d(19, 19) = baro_bias_var * dt;
 
