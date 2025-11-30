@@ -54,12 +54,13 @@ launch_ECEF_m = lla2ecef(launchLLA);
 
 
 %% Attitude Initialization
-yaw_0 = deg2rad(30);
-roll_0 = deg2rad(60);
-pitch_0 = deg2rad(120);
-%yaw_0 = deg2rad(0);
-%roll_0 = deg2rad(0);
+%yaw_0 = deg2rad(30);
+%roll_0 = deg2rad(60);
 %pitch_0 = deg2rad(120);
+% Kids rocket assumed parameters
+yaw_0 = deg2rad(0);
+roll_0 = deg2rad(0);
+pitch_0 = deg2rad(90);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
@@ -141,7 +142,7 @@ init_state = zeros(20, 1);
 init_state(1:4) = dcm2quat(R_EB');
 init_state(8:10) = zeros(3, 1);
 init_state(8:10) = launch_ECEF_m';
-init_state(11:20) = 1e-6;
+init_state(11:20) = 0;
 
 init_lastCalcTimes = zeros(5, 1);
 % In order: FastIMUProp, Accel, mag, gps, baro

@@ -11,7 +11,7 @@ params.max_range = 800;             % ±8 Gauss = ±800 µT
 params.sens = 0.0625;               % µT/LSB resolution
 
 % Bias [uT]
-params.bias = [1; 2; 3];     % 1–2 µT typical bias, tunable
+params.bias = [1; 1.5; 2];     % 1–2 µT typical bias, tunable
 
 % Noise [uT]
 params.noise = [0.01; 0.01; 0.01];                 % 0.4 µT RMS noise (typical)

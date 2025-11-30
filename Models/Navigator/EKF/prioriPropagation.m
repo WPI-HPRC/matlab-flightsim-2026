@@ -9,7 +9,12 @@ q = prevState(1:4)';
 
 rot_vec_norm = norm(rot_vec);
 axis = rot_vec / rot_vec_norm;
-dq = [cos(rot_vec_norm / 2.0); (axis * sin(rot_vec_norm / 2.0))]';
+
+if min(rot_vec_norm) < 1e-9 % Small angle approx if small angle
+    dq = [1; 0.5*rot_vec];
+else
+    dq = [cos(rot_vec_norm / 2.0); (axis * sin(rot_vec_norm / 2.0))]';
+end
 
 q = quatmultiply(q, dq);
 q = q / norm(q);

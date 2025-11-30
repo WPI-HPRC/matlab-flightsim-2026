@@ -11,7 +11,7 @@ params.pos.bias = [0; 0; 0];
 params.pos.noise = [2; 2; 2];
 
 params.vel.bias = [0; 0; 0];
-params.vel.noise = [1; 1; 1];
+params.vel.noise = [0.05; 0.05; 0.05];
 
 
 % TODO
