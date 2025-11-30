@@ -189,6 +189,8 @@ M_pinv = pinv(M);
 w_hat = accel_avg_vars_inv * (ones(2, 1) - R' * (M_pinv * r_bar));
 w_accel = w_hat / sum(w_hat);
 
+combined_accel_var = 1 / ((1 / params.navConst.icm20948.accelXY_var) + (1 / params.navConst.icm20948.accelXY_var));
+% TODO make for all 3 dims seperate
 
 
 %disp("W accel")
@@ -202,6 +204,8 @@ gyro_avg_vars = diag([params.navConst.icm20948.gyroXYZ_var, params.navConst.asm3
 gyro_avg_vars_inv = diag([1.0 / params.navConst.icm20948.gyroXYZ_var, 1.0 / params.navConst.asm330.gyroStdDev^2]);
 
 w_gyro = gyro_avg_vars_inv / sum(gyro_avg_vars_inv);
+
+combined_gyro_var = 1 / ((1 / params.navConst.icm20948.gyroXYZ_var) + (1 / params.navConst.icm20948.gyroXYZ_var));
 
 %disp("W gyro")
 %w_gyro

@@ -5,9 +5,10 @@ function [state, P] = residualErrorInject(oldState, oldP, sens, H, h, R)
 
 
     S = H*oldP*H' + R;
-    % Innovation gating stuff. Not working currently...
+    % Innovation gating stuff. Not working currently until the error terms
+    % there
     %{
-    a = [3.841; 5.991; 7.815; 9.488; 11.07; 12.592; 14.067; 15.507; 16.919; 18.307];
+    a = [6.635; 9.210; 11.345; 13.277; 15.086; 16.812; 18.475; 20.09; 21.666];
     m_dis = residual' * inv(S) * residual;
     if m_dis > a(size(residual, 1))
         disp("Mannhalobis distance")
@@ -20,6 +21,7 @@ function [state, P] = residualErrorInject(oldState, oldP, sens, H, h, R)
         disp(residual)
     end
     %}
+    
 
     K = (oldP * H') / S;
     posterioriErrorState = K * residual;
