@@ -8,12 +8,12 @@ function consts = getNavConsts()
 
     consts.asm330 = asm330;
 
-    icm20948.accelXY_var = 0.0383; % [g]
-    icm20948.accelZ_var  = 0.0626; % [g]
-    icm20948.accelXY_VRW = 0.0052; % [g/sqrt(hz)]
-    icm20948.accelZ_VRW  = 0.0099; % [g/sqrt(hz)]
-    icm20948.gyroXYZ_var = 0.0051; % [deg/s]
-    icm20948.gyro_VRW    = 8.33e-4; % [deg/s/sqrt(Hz)]
+    icm20948.accelXY_var = 0.0383 * 9.8^2; % [m/s/s]
+    icm20948.accelZ_var  = 0.0626 * 9.8^2; % [m/s/s]
+    icm20948.accelXY_VRW = 0.0052 * 9.8; % [m/s/s/sqrt(hz)]
+    icm20948.accelZ_VRW  = 0.0099 * 9.8; % [m/s/s/sqrt(hz)]
+    icm20948.gyroXYZ_var = 0.0051 * (pi / 180.); % [rad/s]
+    icm20948.gyro_VRW    = 8.33e-4 * (pi / 180.); % [rad/s/sqrt(Hz)]
     icm20948.magXYZ_var  = 0.7263;  % [uT]
 
     consts.icm20948 = icm20948;

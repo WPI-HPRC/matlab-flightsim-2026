@@ -23,7 +23,6 @@ time.navDt = 0.005; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
 t0 = -10; % [s] Initial Time
 time.tf = 100; % [s] Final Time
-
 time.startTime = juliandate(datetime("now"));
 
 params.time = time;
@@ -32,7 +31,7 @@ params.time = time;
 
 IMUPropInterval = 0.01;
 accelCorrectionInterval = 0.025;
-magCorrectionInterval = 0.05;
+magCorrectionInterval = 0.2;
 gpsCorrectionInterval = 0.1;
 baroCorrectionInterval = 0.5;
 
@@ -51,16 +50,19 @@ launchLLA = [launchLat, launchLon, launchAlt];
 
 launch_ECEF_m = lla2ecef(launchLLA);
 
+%launch_baro = 100228.0; % kids rocket
+launch_baro = 101325.0; % traditional sea level
+
 
 
 %% Attitude Initialization
-%yaw_0 = deg2rad(30);
-%roll_0 = deg2rad(60);
-%pitch_0 = deg2rad(120);
+yaw_0 = deg2rad(70);
+roll_0 = deg2rad(75);
+pitch_0 = deg2rad(120);
 % Kids rocket assumed parameters
-yaw_0 = deg2rad(0);
-roll_0 = deg2rad(0);
-pitch_0 = deg2rad(90);
+%yaw_0 = deg2rad(0);
+%roll_0 = deg2rad(0);
+%pitch_0 = deg2rad(90);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
@@ -215,9 +217,9 @@ combined_gyro_var = 1 / ((1 / params.navConst.icm20948.gyroXYZ_var) + (1 / param
 
 %% Init EKF Params (R)
 
-R_vec = [(sqrt(params.navConst.icm20948.accelXY_var) * 9.8)^2;
-    (sqrt(params.navConst.icm20948.accelXY_var) * 9.8)^2;
-    (sqrt(params.navConst.icm20948.accelZ_var) * 9.8)^2;
+R_vec = [params.navConst.icm20948.accelXY_var;
+    params.navConst.icm20948.accelXY_var;
+    params.navConst.icm20948.accelZ_var;
     params.navConst.icm20948.magXYZ_var;
     params.navConst.icm20948.magXYZ_var;
     params.navConst.icm20948.magXYZ_var;
