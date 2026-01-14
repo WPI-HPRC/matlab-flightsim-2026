@@ -6,7 +6,7 @@ numFrames = simDuration * fps;
 
 
 R_BT = SimOut.R_BT.Data;
-%R_TE = SimOut.R_TE.Data;
+R_TE = SimOut.R_TE.Data;
 N = size(R_BT, 3);
 
 
@@ -36,7 +36,8 @@ open(v);
 for k = 1:length(idx)
     dr = SimOut.P_E.Data(idx(k), :) - launch_ECEF_m;
     r_ned = R_ET' * dr';
-    q_orientation = quaternion(R_BT(:,:,idx(k)), 'rotmat', 'frame');
+    % Body -> Tangent
+    q_orientation = quaternion(rotm2quat(R_BT(:,:,idx(k)')));
     set(h, 'Orientation', q_orientation, 'Position', r_ned);
     drawnow limitrate;
     frame = getframe(gcf);

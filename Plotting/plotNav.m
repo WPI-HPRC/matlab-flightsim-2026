@@ -18,15 +18,18 @@ function plotNav(out, kfInds)
     N = size(out.R_BT.Data, 3);
     q_true = zeros(4, N);  % [4 x N]
     for i = 1:N
-        R = out.R_BT.Data(:,:,i) * out.R_TE.Data(:, :, i);  
-        q_true(:,i) = rotm2quat(R');
+        %R = out.R_BT.Data(:,:,i) * out.R_TE.Data(:, :, i);
+        R = out.R_TE.Data(:, :, i)' * out.R_BT.Data(:,:,i)';
+        q_true(:,i) = rotm2quat(R);
     end
 
     % === Navigation State Estimates ===
     % Get data from posterior state output (22x1 state vector)
 
     navTime = out.NavBus.state.Time;       
-    x_est = out.NavBus.state.Data'; 
+    x_est = out.NavBus.state.Data';
+    %x_est = squeeze(out.RawDogBus.state.Data);
+    %x_est = out.RawTriadBus.state.Data';
     P = out.NavBus.P.Data;           
 
     q_est   = x_est(1:4, :);        % Quaternion
@@ -61,10 +64,15 @@ function plotNav(out, kfInds)
 
     % === Quaternion Error ===
     q_err = zeros(length(navTime), 4);
+    sm_err = zeros(length(navTime), 3);
     for i = 1:length(navTime)
         qT = q_true_resampled(:, i)';
         qE = q_est(:, i)';
-        q_err(i, :) = quatmultiply(qT, quatinv(qE));  
+        this_q_err = quatmultiply(quatinv(qE), qT);
+        q_err(i, :) = this_q_err;
+        %sm_err(i, :) = this_q_err(2:4) * 2.0; % Word on the street says to multiply by 2, True?
+        % TODO might be wrong here now
+        sm_err(i, :) = this_q_err(2:4);
     end
     
     % === Bias Error ===
@@ -85,9 +93,6 @@ function plotNav(out, kfInds)
     
     % === Plotting ===
     % Attitude covariance is for small angle errors (δθ), not full quaternion
-
-    % Convert covariance of small angle to degrees
-    P(1:3, 1:3, :) = P(1:3, 1:3, :) * (180.0 / pi);
     
     plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Roll', 'Pitch', 'Yaw'});
     plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error ECEF(m)', {'X', 'Y', 'Z'});
@@ -99,7 +104,7 @@ function plotNav(out, kfInds)
     
     % the small angle errors (δθ) rather than quaternion errors
     % TODO: figure this one out
-    %plotWithCovariance(navTime, q_err(2:4), P, [1:3], 'Quaternion Error', {'q_x', 'q_y', 'q_z'});
+    plotWithCovariance(navTime, sm_err, P, [1:3], 'Quaternion Error', {'q_x', 'q_y', 'q_z'});
 end
 
 function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
@@ -134,14 +139,20 @@ function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
     for j = 1:dim
         subplot(dim,1,j);
         plot(timeVec, err(:,j), 'r', 'DisplayName', 'Error'); hold on;
-        plot(timeVec, sigma(:,j), 'b--', 'DisplayName', '+1\sigma');
-        plot(timeVec, -1.0 * sigma(:,j), 'b--', 'DisplayName', '-1\sigma');
+        plot(timeVec, 1.0 * sigma(:,j), 'y--', 'DisplayName', '+1\sigma');
+        plot(timeVec, -1.0 * sigma(:,j), 'y--', 'DisplayName', '-1\sigma');
+        %{
+        plot(timeVec, 2.0 * sigma(:,j), 'g--', 'DisplayName', '+2\sigma');
+        plot(timeVec, -2.0 * sigma(:,j), 'g--', 'DisplayName', '-2\sigma');
+        plot(timeVec, 3.0 * sigma(:,j), 'b--', 'DisplayName', '+3\sigma');
+        plot(timeVec, -3.0 * sigma(:,j), 'b--', 'DisplayName', '-3\sigma');
+        %}
         ylabel([labels{j}, ' ', yLabelStr]);
         grid on;
         legend();
     end
     xlabel('Time (s)');
-    sgtitle([yLabelStr, ' with ±1\sigma Covariance Bounds']);
+    sgtitle([yLabelStr, ' with ±1,2,3\sigma Covariance Bounds']);
     linkaxes(findall(gcf, 'Type', 'axes'), 'x');
 end
 

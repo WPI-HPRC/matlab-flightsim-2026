@@ -1,5 +1,5 @@
-function R_BE = initialOrientationTRIAD(a_b, m_b, a_i, m_i)
-% Returns a DCM ECEF -> Body
+function R_EB = initialOrientationTRIAD(a_b, m_b, a_i, m_i)
+% Returns a DCM Body -> Inertial
     % Normalize the input vectors
     a_b = a_b / norm(a_b);
     m_b = m_b / norm(m_b);
@@ -7,11 +7,11 @@ function R_BE = initialOrientationTRIAD(a_b, m_b, a_i, m_i)
     m_i = m_i / norm(m_i);
 
     % Calculate the reference vectors in inertial frame
-    q_r = a_i;
-    r_r = cross(a_i, m_i) / norm(cross(a_i, m_i));
-    s_r = cross(q_r, r_r);
+    q_i = a_i;
+    r_i = cross(a_i, m_i) / norm(cross(a_i, m_i));
+    s_i = cross(q_i, r_i);
 
-    M_r = [q_r, r_r, s_r];
+    M_i = [q_i, r_i, s_i];
 
     % Calculate the reference vectors in body frame
     q_b = a_b;
@@ -20,9 +20,8 @@ function R_BE = initialOrientationTRIAD(a_b, m_b, a_i, m_i)
 
     M_b = [q_b, r_b, s_b];
 
-    % Calculate the rotation matrix from inertial to body
-    R_EB = M_r * M_b'; % Corrected the multiplication order
-    R_BE = R_EB';
+    % Calculate the rotation matrix from body -> inertial
+    R_EB = M_i * M_b';
 
-    % Want R_BE. Inertial -> Body
+    % Want R_EB.
 end

@@ -25,8 +25,8 @@ consts.gyro.max_range = deg2rad(fs_dps);        % [rad/s]
 consts.gyro.sens = deg2rad(1) / 65.5;           % 65.5 LSB/dps → [rad/s/LSB]
 
 consts.gyro.arw = deg2rad(0.015);               % [rad/s/√Hz]
-consts.gyro.bias = [deg2rad(0.5); deg2rad(0.7); deg2rad(1)];   % bias instability [rad/s]
-consts.gyro.noise = [deg2rad(0.005); deg2rad(0.005); deg2rad(0.005)];             % RMS noise [rad/s]
+consts.gyro.bias = [0; 0; 0];   % bias instability [rad/s]
+consts.gyro.noise = [consts.gyro.arw / sqrt(0.001); consts.gyro.arw / sqrt(0.001); consts.gyro.arw / sqrt(0.001)]; % RMS noise [rad/s] depends on dt (0.001)
 
 consts.gyro.sf = 0.005 * randn(3,1);
 consts.gyro.k2 = 0.001 * randn(3,1);

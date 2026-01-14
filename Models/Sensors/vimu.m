@@ -28,7 +28,7 @@ gyro_avg_vars_inv = diag([1.0 / 0.0051, 1.0 / sqrt(0.0051 + 0.005)^2]);
 
 w_gyro = gyro_avg_vars_inv / sum(gyro_avg_vars_inv);
 
-w_ib_B_true = w_ib_B_true1 * w_gyro(1) + w_ib_B_true2 * w_gyro(2);
+w_ib_B_true = w_ib_B_true1;
 w_ib_B_corr = w_ib_B_corr1 * w_gyro(1) + w_ib_B_corr2 * w_gyro(2);
 
 

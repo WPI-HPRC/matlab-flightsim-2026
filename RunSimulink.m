@@ -19,6 +19,7 @@ params.MotorModel = initMotorModel();
 
 %% Simulation Parameters
 time.dt = 0.001; % [s] Time Step
+dt = 0.001;
 time.navDt = 0.005; % [s] Navigator dt
 time.t0 = -10; % [s] Initial Time
 t0 = -10; % [s] Initial Time
@@ -69,7 +70,7 @@ eul_0 = [roll_0; pitch_0; yaw_0];
 % DCM
 R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX')';
 
-q_TB_0 = dcm2quat(R_TB_0);
+q_TB_0 = rotm2quat(R_TB_0);
 
 % Angular Rate Initialization
 w_ib_x = 1e-10; % [rad/s]
@@ -84,7 +85,7 @@ w_ib_z = 1e-10; % [rad/s]
 % ];
 R_ET = DCM_NED2ECEF(launchLat, launchLon);
 
-R_TB = quat2dcm(q_TB_0);
+R_TB = quat2rotm(q_TB_0);
 R_EB = R_ET * R_TB;
 
 v_0_B = [1e-10; 1e-10; 1e-10]; % [m/s]
@@ -141,13 +142,15 @@ init_P = diag(cat(1, quat_p, vel_p, pos_p, gyro_bias_p, accel_bias_p, mag_bias_p
 %% Init EKF Params (State)
 
 init_state = zeros(20, 1);
-init_state(1:4) = dcm2quat(R_EB');
+init_state(1:4) = rotm2quat(R_EB);
 init_state(8:10) = zeros(3, 1);
 init_state(8:10) = launch_ECEF_m';
 init_state(11:20) = 0;
 
 init_lastCalcTimes = zeros(5, 1);
 % In order: FastIMUProp, Accel, mag, gps, baro
+
+start_vel_orientation_norm = 20;
 
 %% Init EKF Params (Q_d)
 
@@ -170,13 +173,14 @@ baro_bias_var = [7.5^2];
 
 num_imu = 2;
 
-CoM = [-0.1; 0.001; 0.001]; % [m] in NED TODO edit this with new value or as a func of the flight dynamics
+CoM = [0; 0.00; 0.00]; % [m] in NED TODO edit this with new value or as a func of the flight dynamics
 
-icmOriginLoc = [-0.2; 0.05; 0.05]; % TODO update with real value. Also from same frame as CoM
-asmOriginLoc = [-0.2; -0.05; -0.05];
+icmOriginLoc = [0; 0.05; 0.05]; % TODO update with real value. Also from same frame as CoM. In reality is below a little
+asmOriginLoc = [0; -0.05; -0.05];
 
-% TODO ansitropic vs isotropic (current impl) is a subject of future
-% research
+% TODO this assumes noise is isotropic (same on all axes) vs. ansitropic (not same).
+% While not actually true, at this level, this is approximation. However,
+% ansitropic for deterministic errors (sf, non-ortho, etc.)
 accel_avg_vars = diag([params.navConst.icm20948.accelXY_var, params.navConst.asm330.accelStdDev^2]);
 accel_avg_vars_inv = diag([1.0 / params.navConst.icm20948.accelXY_var, 1.0 / params.navConst.asm330.accelStdDev^2]);
 %disp("Vars")

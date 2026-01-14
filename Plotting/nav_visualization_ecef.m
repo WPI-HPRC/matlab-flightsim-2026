@@ -4,7 +4,8 @@ simDuration = 5;
 fps = 60;
 numFrames = simDuration * fps;
 
-quat = SimOut.NavBus.state.Data(:, 1:4);
+%quat = SimOut.NavBus.state.Data(:, 1:4);
+quat = squeeze(SimOut.RawDogBus.state.Data(1:4, :))';
 %quat = SimOut.abhay_midairtriad.Data(:, 1:4); % This is to view the mid-air triad re-orientation
 pos = SimOut.NavBus.state.Data(:, 8:10);
 N = size(quat, 1);
@@ -35,7 +36,9 @@ open(v);
 for k = 2:length(idx)
     dr = pos(idx(k), :) - launch_ECEF_m;
     r_ned = R_ET' * dr';
-    q_orientation = quaternion(dcm2quat(quat2dcm(quat(idx(k), :)) * R_ET));
+    % Want R_TB from R_EB. R_BE * R_ET. R_TE * R_EB
+    q_orientation = quaternion(rotm2quat(R_ET' * quat2rotm(quat(idx(k), :))));
+    %q_orientation = quaternion([1, 0, 0, 0]);
     set(h, 'Orientation', q_orientation, 'Position', r_ned);
     %set(h, 'Orientation', q_orientation);
     drawnow limitrate;
