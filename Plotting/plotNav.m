@@ -97,7 +97,7 @@ function plotNav(out, kfInds)
    
 
     % === Plotting ===
-    % plotWithCovariance(navTime, q_err, P, kfInds.quat, 'Quaternion Error', {'q_w', 'q_x', 'q_y', 'q_z'});
+    plotWithCovariance(navTime, q_err, P, kfInds.quat, 'Quaternion Error', {'q_w', 'q_x', 'q_y', 'q_z'});
     plotWithCovariance(navTime, pos_error, P, kfInds.pos, 'Position Error (m)', {'North', 'East', 'Down'});
     plotWithCovariance(navTime, vel_err, P, kfInds.vel, 'Velocity Error (m/s)', {'V_N', 'V_E', 'V_D'});
     plotWithCovariance(navTime, gb_err, P, kfInds.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'});
