@@ -5,7 +5,7 @@
 
 % note this solution of A and B are based on the linearization that cos
 % delta is approx 1. This is for a max deflection of 10 degrees
-
+addpath(genpath('Models'));
 kins = HPMR_MissileKinematics();
 Jr = kins.I_x;
 Jl = kins.I_y; % Iy and Iz are symmetric
@@ -36,7 +36,7 @@ hells_constant = cr/12 + ct/4; %hells constnat, needs recalculating of the integ
 
 N = 4; %num fins
 
-gainSched = dictionary();
+gainSched = containers.Map('KeyType', 'char', 'ValueType', 'any');
 vels = 1:2.5:100; % 1 to 100 m/s
 heights = 40:5:500; % 40m to 500m elevation
 for vel = vels
@@ -83,6 +83,40 @@ for vel = vels
     end
 end
 
+% After computing all gains, save to CSV
+filename = 'lqr_gains.csv';
+
+% Create header
+header = {'velocity', 'height', 'K11', 'K12', 'K13', 'K14', 'K15', 'K16', ...
+          'K21', 'K22', 'K23', 'K24', 'K25', 'K26', ...
+          'K31', 'K32', 'K33', 'K34', 'K35', 'K36', ...
+          'K41', 'K42', 'K43', 'K44', 'K45', 'K46'};
+
+% Open file for writing
+fid = fopen(filename, 'w');
+fprintf(fid, '%s,', header{1:end-1});
+fprintf(fid, '%s\n', header{end});
+
+% Write data
+for vel = vels
+    for h = heights
+        key = sprintf('%.1f_%.1f', vel, h);
+        K = gainSched(key);
+        
+        % Write velocity and height
+        fprintf(fid, '%.1f,%.1f,', vel, h);
+        
+        % Write K matrix elements (row-major order)
+        K_row = reshape(K', 1, []);  % Transpose then flatten
+        fprintf(fid, '%.6e,', K_row(1:end-1));
+        fprintf(fid, '%.6e\n', K_row(end));
+    end
+end
+
+fclose(fid);
+fprintf('Gains saved to %s\n', filename);
+
+
 % -------- Check closed-loop stability --------
 % maxReal = zeros(numel(vels), numel(heights));
 %
@@ -98,8 +132,6 @@ end
 %imagesc(heights, vels, maxReal); colorbar;
 %title('max real(eig(A-BK)) (should be < 0)');
 % -------- Helper Functions --------
-
-
 
 function M = mach_from_velocity(v, h)
     % v = velocity [m/s]
