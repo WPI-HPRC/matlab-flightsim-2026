@@ -6,37 +6,41 @@
 % note this solution of A and B are based on the linearization that cos
 % delta is approx 1. This is for a max deflection of 10 degrees
 addpath(genpath('Models'));
-kins = HPMR_MissileKinematics();
-Jr = kins.I_x;
-Jl = kins.I_y; % Iy and Iz are symmetric
+kins = HPRC_VoyagerKinematics();
+Jr = kins.I_x_empty;
+Jl = kins.I_y_empty; % Iy and Iz are symmetric
 A_ref = kins.S; % body tubes cross sectional area 
 dbody = kins.diameter;
-span_fin = kins.canard.height * 2; %still needed, placeholder
-span_canard = kins.canard.height; %still needed
-Afin = kins.canard.S * 2; % placeholder
-Acanard = kins.canard.S;
-radius_canard = kins.canard.height + kins.diameter / 2; %body radius at canard position
-radius_fin = radius_canard * 2; %body radius at fin position
-Gamma_c_canard = deg2rad(30); %midchord sweep angle, make sure this is in radians, placeholder
-Gamma_c_fin = deg2rad(45); %placeholder, fin midchord sweep angle
+span_fin = kins.canard.span * 2; %still needed, placeholder %%FIX
+span_canard = kins.canard.span;
+Afin = kins.canard.Area * 2; % placeholder %%FIX
+Acanard = kins.canard.Area;
+radius_canard = kins.canard.span + kins.diameter / 2; %body radius at canard position
+radius_fin = radius_canard * 2; %body radius at fin position %%FIX
+Gamma_c_canard = kins.canard.gamma_c; %midchord sweep angle, make sure this is in radians, placeholder
+Gamma_c_fin = deg2rad(45); %placeholder, fin midchord sweep angle %%FIX
 Xcp_canards = kins.canard.x_cp;
-Xcp_nose = kins.x_cp / 4; %approx location of nose cp
-Xcp_body = kins.x_cp;
-Xcp_fins = kins.len * 7/8; %approx location of fins cp
+Xcp_nose = kins.x_cp / 4; %approx location of nose cp %%FIX
+Xcp_body = kins.x_cp; 
+Xcp_fins = kins.len * 7/8; %approx location of fins cp %%FIX
 X_cp = [Xcp_nose, Xcp_body, Xcp_fins, Xcp_canards]; % moment arm between the CP and CG, X_cp = X_cp - X_cg for each component of the rocket
 cnalpha_nose = 2; % normal force coeff derivative of the nose section (2/A_ref * (A_ref - 0)) == 2
 cnalpha_body = 0; % normal force coeff derivative of the body section (2/A_ref * (A_ref - A_ref)) == 0
 aspect_ratio_canard = span_canard^2 / Acanard;
 CLa = 2 * pi * aspect_ratio_canard / (2 + sqrt(4 + aspect_ratio_canard^2)); % lift curve slope of canards
 
-cr = kins.canard.rootChord;
-ct = kins.canard.tipChord;
-hells_constant = cr/12 + ct/4; %hells constnat, needs recalculating of the integral when final canard shape is known
+cr_canard = kins.canard.rootChord;
+ct_canard = kins.canard.tipChord;
+cr_fin = cr_canard; %%FIX
+ct_fin = ct_canard; %%FIX
+hells_constant_canard = cr_canard/12 + ct_canard/4; %hells constnat, needs recalculating of the integral when final canard shape is known
+hells_constant_fin = hells_constant_canard; %%FIX
 %“How much roll damping comes from the fact that different parts of the fin move at different tangential speeds when the rocket spins
 
 N = 4; %num fins
 
-gainSched = containers.Map('KeyType', 'char', 'ValueType', 'any');
+gainSched_K = containers.Map('KeyType', 'char', 'ValueType', 'any');
+gainSched_AB = containers.Map('KeyType', 'char', 'ValueType', 'any');
 vels = 1:2.5:100; % 1 to 100 m/s
 heights = 40:5:500; % 40m to 500m elevation
 for vel = vels
@@ -50,10 +54,12 @@ for vel = vels
         cnalpha_components = [cnalpha_nose, cnalpha_body, calc_cnalpha_fins(mach, Afin, span_fin, radius_fin, Gamma_c_fin, A_ref), calc_cnalpha_canards(mach, Acanard, span_canard, radius_canard, Gamma_c_canard, A_ref)]; 
 
         %Cdp = ;% Roll damping moment coeff derivative w.r.t roll rate
-        Cdp = q / vel * A_ref * dbody * N * cnalpha_0 * hells_constant;
+        Cdp_canard = q / vel * A_ref * dbody * N * cnalpha_0 * hells_constant_canard;
+        Cdp_fin = q / vel * A_ref * dbody * N * cnalpha_0 * hells_constant_fin;
+        Cdp_total = Cdp_fin + Cdp_canard;
         cnalpha = calc_cnalpha_total(mach, Afin, span_fin, radius_fin, Gamma_c_fin, Acanard, span_canard, radius_canard, Gamma_c_canard, A_ref, cnalpha_nose, cnalpha_body);
         C1 = q * A_ref * cnalpha * Xcp_body; 
-        La = q * A_ref * Cla;
+        La = q * A_ref * CLa;
         Ma = q*A_ref*CLa*Xcp_canards; % pitch moment derivative wrt aoa canards 
         Na = q*A_ref*CLa*Xcp_canards; % yaw moment derivative wrt aoa canards 
         C2 = q/vel * A_ref * sum((cnalpha_components + X_cp).^2); 
@@ -78,8 +84,8 @@ for vel = vels
         R = diag([5, 5, 5, 5]);
         [K,~,~] = lqr(A,B,Q,R);
         key = sprintf('%.1f_%.1f', vel, h);
-        %gainSched(key) = struct("K",K,"A",A,"B",B);
-        gainSched(key) = K;
+        gainSched_K(key) = K;
+        gainSched_AB(key) = struct("A", A, "B", B);  % For stability check
     end
 end
 
@@ -101,7 +107,7 @@ fprintf(fid, '%s\n', header{end});
 for vel = vels
     for h = heights
         key = sprintf('%.1f_%.1f', vel, h);
-        K = gainSched(key);
+        K = gainSched_K(key);
         
         % Write velocity and height
         fprintf(fid, '%.1f,%.1f,', vel, h);
@@ -118,19 +124,22 @@ fprintf('Gains saved to %s\n', filename);
 
 
 % -------- Check closed-loop stability --------
-% maxReal = zeros(numel(vels), numel(heights));
-%
-%for i=1:numel(vels)
-%  for j=1:numel(heights)
-%    key = sprintf('%.1f_%.1f', vels(i), heights(j));
-%    s = gainSched(key);
-%    Acl = s.A - s.B*s.K; % use the A,B for that (v,h)
-%    maxReal(i,j) = max(real(eig(Acl)));
-%  end
-%end
-%
-%imagesc(heights, vels, maxReal); colorbar;
-%title('max real(eig(A-BK)) (should be < 0)');
+maxReal = zeros(numel(vels), numel(heights));
+
+for i=1:numel(vels)
+    for j=1:numel(heights)
+        key = sprintf('%.1f_%.1f', vels(i), heights(j));
+        K = gainSched_K(key);
+        AB = gainSched_AB(key);
+        Acl = AB.A - AB.B*K;
+        maxReal(i,j) = max(real(eig(Acl)));
+    end
+end
+
+imagesc(heights, vels, maxReal); colorbar;
+title('max real(eig(A-BK)) (should be < 0)');
+xlabel('Height [m]');
+ylabel('Velocity [m/s]');
 % -------- Helper Functions --------
 
 function M = mach_from_velocity(v, h)
