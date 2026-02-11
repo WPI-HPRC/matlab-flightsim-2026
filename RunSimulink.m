@@ -2,12 +2,17 @@
 % Author: Daniel Pearson (djpearson@wpi.edu)
 % Version: 7.24.2025
 
+addpath(genpath('Utils'));
+addpath(genpath('Initialization'));
+addpath(genpath('Plotting'));
 clear variables; close all; clc;
 
 %% Configure Models
 params.const = getConsts();
 
 params.kins = HPMR_ModelRocketKinematics();
+
+LQRGain(); 
 
 params.simInds = getSimInds();
 
