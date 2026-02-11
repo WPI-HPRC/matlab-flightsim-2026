@@ -62,8 +62,13 @@ dataVis = figure('Name', 'Missile Data Visualization');
 subplot(1,3,1); 
 hold on;
 ax = gca;
+disp('Quaternion data size:');
+disp(size(quatData));
+disp('First few rows:');
+disp(quatData(1:min(5, end), :));
+
 pose = poseplot(ones('quaternion'));
-pose.Orientation = quaternion(quatData.');
+pose.Orientation = quaternion(quatData);
 
 grid on;
 axis equal;

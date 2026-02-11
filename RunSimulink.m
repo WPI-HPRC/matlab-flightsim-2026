@@ -3,6 +3,7 @@
 % Version: 7.24.2025
 
 addpath(genpath('Utils'));
+addpath(genpath('Models'));
 addpath(genpath('Initialization'));
 addpath(genpath('Plotting'));
 clear variables; close all; clc;
@@ -10,7 +11,7 @@ clear variables; close all; clc;
 %% Configure Models
 params.const = getConsts();
 
-params.kins = HPMR_ModelRocketKinematics();
+params.kins = HPRC_VoyagerKinematics();
 
 LQRGain(); 
 
