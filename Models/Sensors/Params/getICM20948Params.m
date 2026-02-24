@@ -12,9 +12,9 @@ fs_g = 8;  % ±8g
 consts.accel.max_range = fs_g * g;              % [m/s^2]
 consts.accel.sens = g / 4096;                   % 4096 [m/s^2/LSB]
 
-consts.accel.arw = 0.23e-3 * g;                 % Noise Spectral Density [m/s^2/sqrt(hz)]
+consts.accel.vrw = 0.05 / 60.0;                 % Noise Spectral Density [m/s^2/sqrt(sec)] from online lol
 consts.accel.bias = 0.01 * randn(3,1);          % Randomized bias [m/s^2]
-consts.accel.noise = 0.002;                     % RMS noise [m/s^2]
+consts.accel.noise = (0.05 / 60.0) / sqrt(0.005);                     % RMS noise [m/s^2] based on propIntervals
 
 consts.accel.sf = 0.005 * randn(3,1);           % scale factor ~0.5%
 consts.accel.k2 = 0.001 * randn(3,1);           % quadratic nonlinearity
@@ -25,9 +25,9 @@ fs_dps = 500;
 consts.gyro.max_range = deg2rad(fs_dps);        % [rad/s]
 consts.gyro.sens = deg2rad(1) / 65.5;           % 65.5 LSB/dps → [rad/s/LSB]
 
-consts.gyro.arw = deg2rad(0.015);               % [rad/s/√Hz]
-consts.gyro.bias = deg2rad(0.5) * randn(3,1);   % bias instability [rad/s]
-consts.gyro.noise = deg2rad(0.005);             % RMS noise [rad/s]
+consts.gyro.arw = deg2rad(0.246 / 60.0);               % [rad/s/√sec] ASM330
+consts.gyro.bias = deg2rad(0.5) * randn(3,1); % Eh, maybe right idk
+consts.gyro.noise = deg2rad(0.246 / 60.0) / sqrt(0.005);             % RMS noise [rad/s] based on propIntervals
 
 consts.gyro.sf = 0.005 * randn(3,1);
 consts.gyro.k2 = 0.001 * randn(3,1);

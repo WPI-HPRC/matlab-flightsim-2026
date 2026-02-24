@@ -37,14 +37,13 @@ launchLLA = [launchLat, launchLon, launchAlt];
 launch_ECEF_m = lla2ecef(launchLLA);
 
 %% Attitude Initialization
-yaw_0 = deg2rad(0);
+yaw_0 = deg2rad(45);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(86);
+pitch_0 = deg2rad(45);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
-% DCM
-R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX');
+R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX')';
 
 q_TB_0 = rotm2quat(R_TB_0);
 
@@ -64,6 +63,8 @@ R_ET = DCM_NED2ECEF(launchLat, launchLon);
 R_TB = quat2rotm(q_TB_0);
 R_EB = R_ET * R_TB;
 
+q_EB_0 = rotm2quat(R_EB);
+
 v_0_B = [1e-10; 1e-10; 1e-10]; % [m/s]
 v_0_E = R_EB * v_0_B;
 
@@ -82,6 +83,35 @@ x_0 = [
     w_ib_z;
     m_0;
 ];
+
+%% MEKF Init
+
+mekf_state = [
+    q_EB_0';
+    v_0_E(1);
+    v_0_E(2);
+    v_0_E(3);
+    launch_ECEF_m';
+    0;
+    0;
+    0;
+    0;
+    0;
+    0;
+    0;
+    0;
+    0;
+    0;
+];
+
+P = diag([0.1, 0.1, 0.1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+
+lastCalcTimes = zeros(5, 1);
+propIntervals = [0.005, 0.01, 0.1, 0.1, 0.01];
+% propIntervals = [0.001, 0.01, 0.1, 0.1, 0.01];
+
+% IMUProp, AccelUpdate, MagUpdate, GPSUpdate, BaroUpdate
+% Assuming sim dt of 0.001, and using datasheet recommended hz
 
 %% Initialize Navigator
 params.navInds = getNavInds();

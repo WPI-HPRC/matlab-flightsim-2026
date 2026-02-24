@@ -14,7 +14,7 @@ params.sens = 0.0625;               % µT/LSB resolution
 params.bias = 1.0 * randn(3,1);     % 1–2 µT typical bias, tunable
 
 % Noise [uT]
-params.noise = 0.4;                 % 0.4 µT RMS noise (typical)
+params.noise = 0.3;                 % 0.3 µT RMS noise (LIS2MDL)
 
 % Scale factor error [unitless]
 params.sf = 0.01 * randn(3,1);      % ~1% scale factor error
