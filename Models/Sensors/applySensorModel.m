@@ -11,7 +11,7 @@ for i = 1:num_elems
     %sf   = params.sf(i);
     %k2   = params.k2(i);
     %k3   = params.k3(i);
-    noise = params.noise(i) * rand;
+    noise = params.bias(i) + params.noise(i) * rand;
 
     %% DISABLE HIGHER ORDER TERMS TERMPORARILIY
     % y_tilde(i) = yi + bias + sf * yi + k2 * yi^2 + k3 * yi^3 + noise;

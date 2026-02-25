@@ -4,7 +4,7 @@ function Q_d = createProcessNoise(dt)
 
 
 % Already defined variables. Find better way:
-gyro_var = (sqrt(deg2rad(0.015)) * sqrt(dt)) * 500;
+gyro_var = 1.5761e-04;
 gyro_bias_var = 9.1e-1;
 
 accel_bias_var = (1e-1 * 9.8)^2;
@@ -13,9 +13,9 @@ mag_bias_var_diag = diag([1^2; 1^2; 1^2]);
 
 baro_bias_var = 1^2;
 
-R_grav = diag([(0.0383 * 9.8)^2;
-    (0.0383 * 9.8)^2;
-    (0.0626 * 9.8)^2;]);
+R_grav = diag([0.0026;
+    0.0026;
+    0.0026;]);
 
 
 

@@ -146,6 +146,7 @@ init_state(1:4) = rotm2quat(R_EB);
 init_state(8:10) = zeros(3, 1);
 init_state(8:10) = launch_ECEF_m';
 init_state(11:20) = 0;
+init_state(11:13) = [0.4; 0.4; 0.4];
 
 init_lastCalcTimes = zeros(5, 1);
 % In order: FastIMUProp, Accel, mag, gps, baro
