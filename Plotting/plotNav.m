@@ -33,7 +33,8 @@ function plotNav(out, kfInds)
     %navTime = out.noisy_triad.state.Time;
     %navTime = out.perfect_imu.state.Time;
     %navTime = out.noisy_imu.state.Time;
-    navTime = out.perfect_split_mekf.state.Time;
+    %navTime = out.perfect_split_mekf.state.Time;
+    navTime = out.perfect_split_mekf_combined_update.state.Time;
 
     %x_est = squeeze(out.NavBus.state.Data);
     %x_est = squeeze(out.constant_pose.state.Data);
@@ -41,12 +42,14 @@ function plotNav(out, kfInds)
     %x_est = squeeze(out.noisy_triad.state.Data);
     %x_est = squeeze(out.perfect_imu.state.Data);
     %x_est = squeeze(out.noisy_imu.state.Data);
-    x_est = squeeze(out.perfect_split_mekf.state.Data);
+    %x_est = squeeze(out.perfect_split_mekf.state.Data);
+    x_est = squeeze(out.perfect_split_mekf_combined_update.state.Data);
 
     %P = out.NavBus.P.Data;
     %P = out.constant_pose.P.Data;
     %P = out.noisy_imu.P.Data;
-    P = out.perfect_split_mekf.P.Data;
+    %P = out.perfect_split_mekf.P.Data;
+    P = out.perfect_split_mekf_combined_update.P.Data;
 
     q_est   = x_est(1:4, :);        % Quaternion
     vel_est = x_est(5:7, :);        % Velocity  
@@ -164,15 +167,16 @@ function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
     for j = 1:dim
         subplot(dim,1,j);
         plot(timeVec, err(:,j), 'r', 'DisplayName', 'Error'); hold on;
-        
+        %{
         plot(timeVec, 1.0 * sigma(:,j), 'y--', 'DisplayName', '+1\sigma');
         plot(timeVec, -1.0 * sigma(:,j), 'y--', 'DisplayName', '-1\sigma');
-        %{
+        
         plot(timeVec, 2.0 * sigma(:,j), 'g--', 'DisplayName', '+2\sigma');
         plot(timeVec, -2.0 * sigma(:,j), 'g--', 'DisplayName', '-2\sigma');
+        %}
         plot(timeVec, 3.0 * sigma(:,j), 'b--', 'DisplayName', '+3\sigma');
         plot(timeVec, -3.0 * sigma(:,j), 'b--', 'DisplayName', '-3\sigma');
-        %}
+        
         ylabel([labels{j}, ' ', yLabelStr]);
         grid on;
         legend();

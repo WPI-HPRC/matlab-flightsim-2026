@@ -128,7 +128,7 @@ att_mekf_state = [
 % 12x12
 % att_P = diag([1e-1; 1e-1; 1e-1; 2 * deg2rad(2); 2 * deg2rad(2); 2 * deg2rad(2); 0.0980665; 0.0980665; 0.0980665; 1.0; 1.0; 1.0]);
 
-att_P = diag([1e-1; 1e-1; 1e-1; 2 * deg2rad(2); 2 * deg2rad(2); 2 * deg2rad(2); 1e-3; 1e-3; 1e-3; 1e-3; 1e-3; 1e-3]);
+att_P = diag([1e-0; 1e-0; 1e-0; 5 * deg2rad(2); 5 * deg2rad(2); 2 * deg2rad(2); 1e-3; 1e-3; 1e-3; 1e-3; 1e-3; 1e-3]);
 
 % 10x1
 pv_ekf_state = [
@@ -143,7 +143,7 @@ pv_P = diag([1e-1; 1e-1; 1e-1; 5; 5; 5; 1; 1; 1; 50]);
 
 
 lastCalcTimesSplit = zeros(6, 1);
-propIntervalsSplit = [0.005, 0.01, 0.006, 0.006, 0.1, 0.01];
+propIntervalsSplit = [0.005, 0.01, 0.01, 0.01, 0.1, 0.01];
 
 % GyroProp, AccelProp, AccelUpdate, MagUpdate, GPSUpdate, BaroUpdate
 % Assuming sim dt of 0.001, and using datasheet recommended hz
