@@ -1,19 +1,36 @@
 function consts = getASM330Params()
+% GETASM330PARAMS - Returns modeled constants for ASM330 9-DOF IMU
+% Units: accel [m/s^2], gyro [rad/s], mag [uT]
 
-    %% Gyroscope Parameters
+rng(42);  % Seed for reproducibility
 
-    % Angular Random Walk
-    consts.gyro.arw.xy = 0.029922; % [deg/sqrt(hz)] 
-    consts.gyro.arw.z  = 0.015158; % [deg/sqrt(hz)]
+g = 9.80665;  % m/s^2
 
-    % Bias Instability
-    consts.gyro.bias.x = 0.648177; % [deg/h]
-    consts.gyro.bias.y = 0.682535; % [deg/h]
-    consts.gyro.bias.z = 0.592768; % [deg/h]
+%% Accelerometer Parameters (±8g range assumed)
+fs_g = 8;  % ±8g
+consts.accel.max_range = fs_g * g;              % [m/s^2]
+consts.accel.sens = g / 4096;                   % 4096 [m/s^2/LSB]
 
-    consts.gyro.noise = 5e-3; % [dps/sqrt(hz)]
+consts.accel.arw = 0.23e-3 * g;                 % Noise Spectral Density [m/s^2/sqrt(hz)]
+consts.accel.bias = [0.1; 0.1; 0.1];          % Randomized bias [m/s^2]
+consts.accel.noise = [0.002; 0.002; 0.002];                     % RMS noise [m/s^2]
 
-    %% Accelerometer Parameters
+consts.accel.sf = 0.005 * randn(3,1);           % scale factor ~0.5%
+consts.accel.k2 = 0.001 * randn(3,1);           % quadratic nonlinearity
+consts.accel.k3 = 0.0001 * randn(3,1);          % cubic nonlinearity
 
-    consts.accel.noise = 60e-6; % [g/sqrt(hz)] 
+%% Gyroscope Parameters (±500 dps range assumed)
+fs_dps = 500;
+consts.gyro.max_range = deg2rad(fs_dps);        % [rad/s]
+consts.gyro.sens = deg2rad(1) / 65.5;           % 65.5 LSB/dps → [rad/s/LSB]
+
+consts.gyro.arw = deg2rad(0.015);               % [rad/s/√Hz]
+consts.gyro.bias = [0; 0; 0];   % bias instability [rad/s]
+consts.gyro.noise = [consts.gyro.arw / sqrt(0.001); consts.gyro.arw / sqrt(0.001); consts.gyro.arw / sqrt(0.001)]; % RMS noise [rad/s] depends on dt (0.001)
+
+consts.gyro.sf = 0.005 * randn(3,1);
+consts.gyro.k2 = 0.001 * randn(3,1);
+consts.gyro.k3 = 0.0001 * randn(3,1);
+
+
 end

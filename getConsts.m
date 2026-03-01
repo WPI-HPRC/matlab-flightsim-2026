@@ -13,7 +13,7 @@ consts.rho_sl = 1.225;   % [kg/m^3] Density at sea level
 
 %% Pressure Model Constants;
 consts.P0 = 101325;     % [Pa] Reference pressure
-consts.L  = 0.0065;     % [K/m] Temperature lapse rate
+consts.L  = -0.0065;     % [K/m] Temperature lapse rate
 consts.T0  = 288.15;    % [K] Reference Temperature
 consts.M   = 0.0289644; % [kg/mol] Molar mass of Air
 consts.R   = 8.3144598; % [J/kg*K] Universal Gas Constant
