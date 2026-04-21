@@ -39,11 +39,12 @@ launch_ECEF_m = lla2ecef(launchLLA);
 %% Attitude Initialization
 yaw_0 = deg2rad(45);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(45);
+pitch_0 = deg2rad(90);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
 R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX')';
+R_TB_1 = angle2dcm(roll_0, pitch_0, yaw_0, 'XYZ')';
 
 q_TB_0 = rotm2quat(R_TB_0);
 

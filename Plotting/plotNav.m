@@ -79,15 +79,15 @@ function plotNav(out, kfInds)
     pos_error = pos_true_resampled - pos_est;
     sum_pos_errors = sum(pos_error.^2, 2);
 
-    disp("Sum of squares pos error: ")
-    disp(sum_pos_errors);
+    disp("RMSE pos error: ")
+    disp(sqrt(sum_pos_errors / length(navTime)));
 
     % === Velocity Error ===
     vel_err = vel_true_resampled - vel_est;
     sum_vel_errors = sum(vel_err.^2, 2);
 
-    disp("Sum of squares vel error: ")
-    disp(sum_vel_errors);
+    disp("RMSE vel error: ")
+    disp(sqrt(sum_vel_errors / length(navTime)));
 
     % === Quaternion Error ===
     sum_quat_errors = zeros(3, 1);
@@ -101,8 +101,8 @@ function plotNav(out, kfInds)
         sm_err(i, :) = this_q_err(2:4) * 2.0; % To small angle approx
         sum_quat_errors = sum_quat_errors + sm_err(i, :)'.^2;
     end
-    disp("Sum of squares quaternion error: ")
-    disp(sum_quat_errors);
+    disp("RMSE quaternion error: ")
+    disp(sqrt(sum_quat_errors / length(navTime)));
     
     % === Bias Error ===
     gb_err = gb_est - ICM20948_PARAMS.gyro.bias;
