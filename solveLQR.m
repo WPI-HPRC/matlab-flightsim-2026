@@ -7,42 +7,46 @@
 % delta is approx 1. This is for a max deflection of 10 degrees
 addpath(genpath('Models'));
 kins = HPRC_VoyagerKinematics();
+Xg = kins.x_cg; 
 Jr = kins.I_x_empty;
 Jl = kins.I_y_empty; % Iy and Iz are symmetric
 A_ref = kins.S; % body tubes cross sectional area 
 dbody = kins.diameter;
-span_fin = kins.canard.span * 2; %still needed, placeholder %%FIX
+span_fin = kins.fin.span;
 span_canard = kins.canard.span;
-Afin = kins.canard.Area * 2; % placeholder %%FIX
+Afin = kins.fin.Area; 
 Acanard = kins.canard.Area;
 radius_canard = kins.canard.span + kins.diameter / 2; %body radius at canard position
-radius_fin = radius_canard * 2; %body radius at fin position %%FIX
+radius_fin = kins.fin.span + kins.diameter / 2; %body radius at fin position 
 Gamma_c_canard = kins.canard.gamma_c; %midchord sweep angle, make sure this is in radians, placeholder
-Gamma_c_fin = deg2rad(45); %placeholder, fin midchord sweep angle %%FIX
+Gamma_c_fin = kins.fin.gamma_c; %fin midchord sweep angle
 Xcp_canards = kins.canard.x_cp;
 Xcp_nose = kins.x_cp / 4; %approx location of nose cp %%FIX
 Xcp_body = kins.x_cp; 
-Xcp_fins = kins.len * 7/8; %approx location of fins cp %%FIX
+Xcp_fins = kins.fin.x_cp; %approx location of fins cp %%FIX
 X_cp = [Xcp_nose, Xcp_body, Xcp_fins, Xcp_canards]; % moment arm between the CP and CG, X_cp = X_cp - X_cg for each component of the rocket
 cnalpha_nose = 2; % normal force coeff derivative of the nose section (2/A_ref * (A_ref - 0)) == 2
 cnalpha_body = 0; % normal force coeff derivative of the body section (2/A_ref * (A_ref - A_ref)) == 0
 aspect_ratio_canard = span_canard^2 / Acanard;
 CLa = 2 * pi * aspect_ratio_canard / (2 + sqrt(4 + aspect_ratio_canard^2)); % lift curve slope of canards
 
+% DEBUG
+disp(sign(Xcp_canards - kins.x_cg))
+
 cr_canard = kins.canard.rootChord;
 ct_canard = kins.canard.tipChord;
-cr_fin = cr_canard; %%FIX
-ct_fin = ct_canard; %%FIX
-hells_constant_canard = cr_canard/12 + ct_canard/4; %hells constnat, needs recalculating of the integral when final canard shape is known
-hells_constant_fin = hells_constant_canard; %%FIX
+cr_fin = kins.fin.rootChord;
+ct_fin = kins.fin.tipChord;
+hells_constant_canard = cr_canard/12 + ct_canard/4; %hells constant, needs recalculating of the integral when final canard shape is known
+hells_constant_fin = cr_fin/12 + ct_fin/4; 
 %“How much roll damping comes from the fact that different parts of the fin move at different tangential speeds when the rocket spins
 
 N = 4; %num fins
 
 gainSched_K = containers.Map('KeyType', 'char', 'ValueType', 'any');
 gainSched_AB = containers.Map('KeyType', 'char', 'ValueType', 'any');
-vels = 1:2.5:100; % 1 to 100 m/s
-heights = 40:5:500; % 40m to 500m elevation
+vels = 0.1:2.5:200;      % up to 250 m/s
+heights = 10:25:900;    % up to 3km
 for vel = vels
     for h = heights
 
@@ -64,7 +68,7 @@ for vel = vels
         Na = q*A_ref*CLa*Xcp_canards; % yaw moment derivative wrt aoa canards 
         C2 = q/vel * A_ref * sum((cnalpha_components + X_cp).^2); 
         
-        
+        % Maybe the bottom 2 also need to be switched 
         A = [0, 0, 0, 1,        0,      0;
              0, 0, 0, 0,        1,      0;
              0, 0, 0, 0,        0,      1;
@@ -75,14 +79,17 @@ for vel = vels
         B = [0,      0,      0,      0;      
              0,      0,      0,      0;      
              0,      0,      0,      0;      
-             -La/Jr, -La/Jr, -La/Jr, -La/Jr; 
-             -Ma/Jl, Ma/Jl,  0,      0;      
-             0,      0,      -Na/Jl, Na/Jl];
+             -La/Jr, -La/Jr,-La/Jr, -La/Jr; 
+             0,  Ma/Jl,      0,  -Ma/Jl;      
+            Na/Jl,      0,   -Na/Jl,      0
+            ];
 
         
-        Q = diag([1e-9, 4, 4, 4, 1, 1]);
-        R = diag([5, 5, 5, 5]);
-        [K,~,~] = lqr(A,B,Q,R);
+        Q = diag([1e-10, 1e-10, 1e-10, 1e-10, 1e-10, 1e-10]);
+        R = diag([1e-10, 1e-10, 1e-10, 1e-10]);
+        [K,~,poles] = lqr(A,B,Q,R); 
+        % disp("Poles"); 
+        % disp(poles); 
         key = sprintf('%.1f_%.1f', vel, h);
         gainSched_K(key) = K;
         gainSched_AB(key) = struct("A", A, "B", B);  % For stability check
