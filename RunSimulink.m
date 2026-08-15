@@ -18,9 +18,9 @@ params.AeroModel = init_IREC2025_CFDModel();
 params.MotorModel = initMotorModel();
 
 %% Simulation Parameters
-time.dt = 0.001; % [s] Time Step
+time.dt = 0.004; % [s] Time Step
 time.navDt = 0.01; % [s] Navigator dt
-time.t0 = -10; % [s] Initial Time
+time.t0 = -15; % [s] Initial Time
 time.tf = 100; % [s] Final Time
 
 time.startTime = juliandate(datetime("now"));
@@ -39,7 +39,7 @@ launch_ECEF_m = lla2ecef(launchLLA);
 %% Attitude Initialization
 yaw_0 = deg2rad(45);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(90);
+pitch_0 = deg2rad(70);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 

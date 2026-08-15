@@ -123,19 +123,19 @@ function plotNav(out, kfInds)
     % === Plotting ===
     % Attitude covariance is for small angle errors (δθ), not full quaternion
     
-    plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Roll', 'Pitch', 'Yaw'});
-    plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error ECEF(m)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, vel_err, P, kfInds_mekf.vel, 'Velocity Error ECEF (m/s)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, gb_err, P, kfInds_mekf.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, accb_err, P, kfInds_mekf.accelBias, 'Acc Bias Estimation (m/s^2)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, mb_err, P, kfInds_mekf.magBias, 'Mag Bias Estimation (uT)', {'X', 'Y', 'Z'});
-    plotWithCovariance(navTime, p_err, P, kfInds_mekf.pBias, 'Baro Bias Estimation (Pa)', {'-D'});
+    plotWithCovariance(navTime, eul_error, P, [1:3], 'Euler Angle Error (deg)', {'Roll', 'Pitch', 'Yaw'}, 5);
+    plotWithCovariance(navTime, pos_error, P, kfInds_mekf.pos, 'Position Error ECEF(m)', {'X', 'Y', 'Z'}, 5);
+    plotWithCovariance(navTime, vel_err, P, kfInds_mekf.vel, 'Velocity Error ECEF (m/s)', {'X', 'Y', 'Z'}, 1);
+    plotWithCovariance(navTime, gb_err, P, kfInds_mekf.gyroBias, 'Gyro Bias Estimation (rad/s)', {'X', 'Y', 'Z'}, 0.2);
+    plotWithCovariance(navTime, accb_err, P, kfInds_mekf.accelBias, 'Acc Bias Estimation (m/s^2)', {'X', 'Y', 'Z'}, 1);
+    plotWithCovariance(navTime, mb_err, P, kfInds_mekf.magBias, 'Mag Bias Estimation (uT)', {'X', 'Y', 'Z'}, 1);
+    plotWithCovariance(navTime, p_err, P, kfInds_mekf.pBias, 'Baro Bias Estimation (Pa)', {'-D'}, 1);
     
     % the small angle errors (δθ) rather than quaternion errors
-    plotWithCovariance(navTime, sm_err, P, [1:3], 'Quaternion Error', {'q_x', 'q_y', 'q_z'});
+    plotWithCovariance(navTime, sm_err, P, [1:3], 'Quaternion Error', {'q_x', 'q_y', 'q_z'}, 0.1);
 end
 
-function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
+function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels, bound)
     if size(errorVec, 2) == length(inds)
         err = errorVec;
     elseif size(errorVec, 1) == length(inds)
@@ -178,11 +178,13 @@ function plotWithCovariance(timeVec, errorVec, P, inds, yLabelStr, labels)
         plot(timeVec, -3.0 * sigma(:,j), 'b--', 'DisplayName', '-3\sigma');
         
         ylabel([labels{j}, ' ', yLabelStr]);
+        ylim([-1.0 * bound, bound]);
         grid on;
         legend();
     end
     xlabel('Time (s)');
-    sgtitle([yLabelStr, ' with ±1,2,3\sigma Covariance Bounds']);
+    %sgtitle([yLabelStr, ' with ±1,2,3\sigma Covariance Bounds']);
+    sgtitle([yLabelStr, ' with ±3\sigma Covariance Bounds']);
     linkaxes(findall(gcf, 'Type', 'axes'), 'x');
 end
 
