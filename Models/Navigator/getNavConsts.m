@@ -16,6 +16,14 @@ function consts = getNavConsts()
     icm20948.gyro_VRW    = 8.33e-4; % [deg/s/sqrt(Hz)]
     icm20948.magXYZ_var  = 0.7263;  % [uT]
 
+    icm20948.gyro_ARW = [0.1; 0.1; 0.1]; % deg/sqrt(hr) -> rad/sqrt(s)
+    icm20948.gyroXBiasStdDev = 0.1;
+    icm20948.gyroYBiasStdDev = 0.1;
+    icm20948.gyroZBiasStdDev = 0.1;
+
+
+
+
     consts.icm20948 = icm20948;
 
     consts.R_grav = [

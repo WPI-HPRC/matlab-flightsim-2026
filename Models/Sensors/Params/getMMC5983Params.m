@@ -11,10 +11,14 @@ params.max_range = 800;             % ±8 Gauss = ±800 µT
 params.sens = 0.0625;               % µT/LSB resolution
 
 % Bias [uT]
-params.bias = 1.0 * randn(3,1);     % 1–2 µT typical bias, tunable
+mag_bias_rep = [0.1; 0.1; 0.1];
+params.bias_rep = mag_bias_rep;
+params.bias = mag_bias_rep .* randn(3, 1);     % 1–2 µT typical bias, tunable
+params.bias_inst = [1e-5; 1e-5; 1e-5;];
+
 
 % Noise [uT]
-params.noise = 0.4;                 % 0.4 µT RMS noise (typical)
+params.noise = [1e-3; 1e-3; 1e-3];                 % 0.4 µT RMS noise (typical)
 
 % Scale factor error [unitless]
 params.sf = 0.01 * randn(3,1);      % ~1% scale factor error

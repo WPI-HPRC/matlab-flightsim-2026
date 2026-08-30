@@ -1,8 +1,9 @@
-function y_tilde = applySensorModel(y, params)
+function y_tilde = applySensorModel(y, params,rn)
 % APPLYSENSORMODEL - Applies IMU sensor error model to true reading
 % INPUTS:
     % y [3x1] Sensor Truth Vector (sf, ang rate, mag)
     % params - Sensor Constants
+    % rn - Random number generated of (0, 1)
 % Outputs:
     % y_tilde - [3x1] Corrupted Sensor Readings
 
@@ -15,12 +16,13 @@ for i = 1:3
     sf   = params.sf(i);
     k2   = params.k2(i);
     k3   = params.k3(i);
-    noise = params.noise * randn();
+    noise = params.noise(i) * rn;
 
     %% DISABLE HIGHER ORDER TERMS TERMPORARILIY
     % y_tilde(i) = yi + bias + sf * yi + k2 * yi^2 + k3 * yi^3 + noise;
-    y_tilde(i) = yi + bias + noise;
     % y_tilde(i) = yi;
+    % y_tilde(i) = yi + bias;
+    y_tilde(i) = yi + bias + noise;
 end
 
 end

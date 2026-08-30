@@ -36,15 +36,17 @@ launchLLA = [launchLat, launchLon, launchAlt];
 
 launch_ECEF_m = lla2ecef(launchLLA);
 
+launchGeoidHeight = geoidheight(launchLat, launchLon);
+
 %% Attitude Initialization
 yaw_0 = deg2rad(0);
+pitch_0 = deg2rad(45);
 roll_0 = deg2rad(0);
-pitch_0 = deg2rad(86);
 
 eul_0 = [roll_0; pitch_0; yaw_0];
 
 % DCM
-R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX');
+R_TB_0 = angle2dcm(yaw_0, pitch_0, roll_0, 'ZYX')';
 
 q_TB_0 = rotm2quat(R_TB_0);
 
@@ -54,18 +56,15 @@ w_ib_y = 1e-10; % [rad/s]
 w_ib_z = 1e-10; % [rad/s]
 
 % Velocity Initialization
-% R_ET = [
-%     -sind(launchLat)*cosd(launchLon), -sind(launchLon), -cosd(launchLat)*cosd(launchLon);
-%     -sind(launchLat)*sind(launchLon),  cosd(launchLon), -cosd(launchLat)*sind(launchLon);
-%      cosd(launchLat),            0,         -sind(launchLat)
-% ];
-R_ET = DCM_NED2ECEF(launchLat, launchLon);
+
+R_ET = dcmecef2ned(launchLat, launchLon)';
 
 R_TB = quat2rotm(q_TB_0);
 R_EB = R_ET * R_TB;
 
 v_0_B = [1e-10; 1e-10; 1e-10]; % [m/s]
 v_0_E = R_EB * v_0_B;
+v_0_T = R_TB * v_0_B;
 
 % Initial Mass
 m_0 = params.kins.m_0 + params.MotorModel.emptyWt + params.MotorModel.propWt;
@@ -87,6 +86,34 @@ x_0 = [
 params.navInds = getNavInds();
 params.navConst = getNavConsts();
 params.navParams = initNavParams(params);
+
+nav_state = [ % Total 20 states, 19 error state
+    q_TB_0'; % Quat (NED<-B)
+    v_0_T; % Vel (NED)
+    zeros(3, 1); % Pos (NED)
+    zeros(3, 1); % Gyro bias
+    zeros(3, 1); % Accel bias
+    zeros(3, 1); % Mag bias
+    0 % Baro bias
+];
+gyro_accel_params = getICM20948Params();
+mag_params = getMMC5983Params();
+baro_params = getLPS22HHParams();
+quat_var = [deg2rad(1)^2; deg2rad(1)^2; deg2rad(1)^2];
+vel_var = [0.01^2; 0.01^2; 0.01^2];
+pos_var = [0.1^2; 0.1^2; 0.1^2];
+gb_var = [(gyro_accel_params.gyro.bias_rep(1))^2; (gyro_accel_params.gyro.bias_rep(2))^2; (gyro_accel_params.gyro.bias_rep(3))^2];
+ab_var = [(gyro_accel_params.accel.bias_rep(1))^2; (gyro_accel_params.accel.bias_rep(2))^2; (gyro_accel_params.accel.bias_rep(3))^2];
+mb_var = [mag_params.bias_rep(1)^2; mag_params.bias_rep(2)^2; mag_params.bias_rep(3)^2];
+bb_var = [baro_params.bias_rep^2];
+nav_covs = diag([ ...
+    quat_var; ...
+    vel_var; ...
+    pos_var; ...
+    gb_var; ...
+    ab_var; ...
+    mb_var; ...
+    bb_var;]);
 
 %% Initialize Simulink
 initSimulinkBus(params);
