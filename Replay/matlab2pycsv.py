@@ -7,11 +7,17 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import os
 
-all_matlab_data = pd.read_csv(os.path.join("Replay", "runs", "simulations", "dynamics.csv"))
+run_num = 0
+
+all_matlab_data = pd.read_csv(os.path.join("Replay", "runs", "simulations", f"run_{run_num}", "dynamics.csv"))
+
+save_path = os.path.join("Replay", "runs", "simulations", f"run_{run_num}")
 
 gps_data = pd.DataFrame(columns=["gps_time", "gps_lat", "gps_lon", "gps_alt", "gps_vn", "gps_ve", "gps_vu"])
 
 imu_data = pd.DataFrame(columns=["imu_time", "imu_a_x", "imu_a_y", "imu_a_z", "imu_g_x", "imu_g_y", "imu_g_z"])
+
+mag_data = pd.DataFrame(columns=["mag_time", "mag_x", "mag_y", "mag_z"])
 
 baro_data = pd.DataFrame(columns=["baro_time", "baro_alt"])
 
@@ -30,7 +36,9 @@ for i, time in enumerate(all_matlab_data['sim_time'][0:1000]):
 
 
     time_ms = i / 10000
-    new_row = pd.DataFrame([{
+
+
+    new_gps_row = pd.DataFrame([{
         "gps_time": time,
         "gps_lat": r_lla[0],
         "gps_lon": r_lla[1],
@@ -39,16 +47,39 @@ for i, time in enumerate(all_matlab_data['sim_time'][0:1000]):
         "gps_ve": v_ned[1],
         "gps_vu": -1.0 * v_ned[2],
     }])
+    gps_data = pd.concat([gps_data, new_gps_row], ignore_index=True)
 
-    gps_data = pd.concat([gps_data, new_row], ignore_index=True)
+    new_imu_row = pd.DataFrame([{
+        "imu_time": time,
+        "imu_a_x": all_matlab_data.loc[i, "a_B_0"],
+        "imu_a_y": all_matlab_data.loc[i, "a_B_1"],
+        "imu_a_z": all_matlab_data.loc[i, "a_B_2"],
+        "imu_g_x": all_matlab_data.loc[i, "w_ib_B_0"],
+        "imu_g_y": all_matlab_data.loc[i, "w_ib_B_1"],
+        "imu_g_z": all_matlab_data.loc[i, "w_ib_B_2"],
 
-    # imu_data = imu_data.append({
-    #     "imu_time": time,
-    #     "imu_a_x": all_matlab_data.loc[i, "a_body_0"],
-    #     "imu_a_y": all_matlab_data.loc[i, "a_body_1"],
-    #     "imu_a_z": all_matlab_data.loc[i, "a_body_2"],
-    # })
+    }])
+    imu_data = pd.concat([imu_data, new_imu_row], ignore_index=True)
 
-print(gps_data.tail())
+
+    mag_ned = np.array(all_matlab_data.loc[i, ["m_e_0", "m_e_1", "m_e_2"]])
+
+    mag_body = R_BT.apply(mag_ned)
+
+
+    new_mag_row = pd.DataFrame([{
+        "mag_time": time,
+        "mag_x": mag_body[0],
+        "mag_y": mag_body[1],
+        "mag_z": mag_body[2],
+    }])
+    mag_data = pd.concat([mag_data, new_mag_row], ignore_index=True)
+
+# print(gps_data.tail())
+# print(imu_data.tail())
+
+gps_data.to_csv(os.path.join(save_path, "gps_data.csv"), index=False)
+imu_data.to_csv(os.path.join(save_path, "imu_data.csv"), index=False)
+mag_data.to_csv(os.path.join(save_path, "mag_data.csv"), index=False)
 
 
