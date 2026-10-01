@@ -23,12 +23,15 @@ baro_data = pd.DataFrame(columns=["baro_time", "baro_alt"])
 
 
 
-for i, time in enumerate(all_matlab_data['sim_time'][0:1000]):
-    # print(f"Time: {time}")
+for i, time in enumerate(all_matlab_data['sim_time']):
+    # print(f"i: {i}, Time: {time}")
     r_ecef = np.array(all_matlab_data.loc[i, ['P_E_0', 'P_E_1', 'P_E_2']])
     v_ecef = np.array(all_matlab_data.loc[i, ['V_E_0', 'V_E_1', 'V_E_2']])
     R_BT = R.from_matrix(np.array(all_matlab_data.loc[i, ['R_BT_00', 'R_BT_01', 'R_BT_02', 'R_BT_10', 'R_BT_11', 'R_BT_12', 'R_BT_20', 'R_BT_21', 'R_BT_22']]).reshape((3, 3)))
     R_TE = R.from_matrix(np.array(all_matlab_data.loc[i, ['R_TE_00', 'R_TE_01', 'R_TE_02', 'R_TE_10', 'R_TE_11', 'R_TE_12', 'R_TE_20', 'R_TE_21', 'R_TE_22']]).reshape((3, 3)))
+    g_e = np.array(all_matlab_data.loc[i, ["g_e_0", "g_e_1", "g_e_2"]])
+
+    sf_b = np.array(all_matlab_data.loc[i, ["a_B_0", "a_B_1", "a_B_2"]]) - R_BT.apply(g_e)
 
     v_ned = R_TE.apply(v_ecef)
 
@@ -51,12 +54,15 @@ for i, time in enumerate(all_matlab_data['sim_time'][0:1000]):
 
     new_imu_row = pd.DataFrame([{
         "imu_time": time,
-        "imu_a_x": all_matlab_data.loc[i, "a_B_0"],
-        "imu_a_y": all_matlab_data.loc[i, "a_B_1"],
-        "imu_a_z": all_matlab_data.loc[i, "a_B_2"],
+        "imu_a_x": sf_b[0],
+        "imu_a_y": sf_b[1],
+        "imu_a_z": sf_b[2],
         "imu_g_x": all_matlab_data.loc[i, "w_ib_B_0"],
         "imu_g_y": all_matlab_data.loc[i, "w_ib_B_1"],
         "imu_g_z": all_matlab_data.loc[i, "w_ib_B_2"],
+        "g_e_x": all_matlab_data.loc[i, "g_e_0"],
+        "g_e_y": all_matlab_data.loc[i, "g_e_1"],
+        "g_e_z": all_matlab_data.loc[i, "g_e_2"],
 
     }])
     imu_data = pd.concat([imu_data, new_imu_row], ignore_index=True)
@@ -72,6 +78,9 @@ for i, time in enumerate(all_matlab_data['sim_time'][0:1000]):
         "mag_x": mag_body[0],
         "mag_y": mag_body[1],
         "mag_z": mag_body[2],
+        "m_e_x": mag_ned[0],
+        "m_e_y": mag_ned[1],
+        "m_e_z": mag_ned[2],
     }])
     mag_data = pd.concat([mag_data, new_mag_row], ignore_index=True)
 

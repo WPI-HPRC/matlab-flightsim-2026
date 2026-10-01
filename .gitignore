@@ -71,3 +71,8 @@ slprj/
 
 # Unreal Project
 AutoVrtlEnv/
+
+# Replay
+*.csv
+*.png
+*.jpg
